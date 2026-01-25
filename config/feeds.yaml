@@ -1,0 +1,43 @@
+# Substack Digest Agent - Feed Configuration
+#
+# Format:
+#   feed_name:
+#     url: RSS feed URL
+#     category: Category for grouping (optional)
+#     priority: 1-5, higher = more important (optional)
+#     notes: Personal notes about this feed (optional)
+
+feeds:
+  # Technology
+  stratechery:
+    url: https://stratechery.com/feed/
+    category: Tech Strategy
+    priority: 5
+    notes: Ben Thompson's analysis - always worth reading
+
+  simon_willison:
+    url: https://simonwillison.net/atom/everything/
+    category: AI & Development
+    priority: 5
+
+  # Example Substacks (replace with your actual subscriptions)
+  example_newsletter:
+    url: https://example.substack.com/feed
+    category: General
+    priority: 3
+
+# Categories define the sections in your digest
+# Articles are grouped by category, then sorted by priority within each
+
+categories:
+  - name: Tech Strategy
+    description: Business and strategy analysis
+    color: "#3B82F6" # Blue
+
+  - name: AI & Development
+    description: AI news, tools, and technical content
+    color: "#8B5CF6" # Purple
+
+  - name: General
+    description: Everything else worth reading
+    color: "#6B7280" # Gray

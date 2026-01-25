@@ -1,0 +1,40 @@
+YOUR DAILY DIGEST
+{{ digest.date.strftime('%A, %B %d, %Y') }}
+{{ '=' * 50 }}
+
+{{ digest.total_articles }} articles from {{ digest.total_feeds }} sources
+
+{% if digest.overall_themes %}
+TODAY'S THEMES
+{% for theme in digest.overall_themes %}• {{ theme }}
+{% endfor %}
+{% endif %}
+
+{% for category in digest.categories %}
+{{ '-' * 50 }}
+{{ category.name|upper }} ({{ category.article_count }} article{% if category.article_count != 1 %}s{% endif %})
+{{ '-' * 50 }}
+
+{% if category.synthesis %}
+{{ category.synthesis }}
+
+{% endif %}
+{% if category.top_takeaways %}
+KEY TAKEAWAYS:
+{% for takeaway in category.top_takeaways[:3] %}• {{ takeaway }}
+{% endfor %}
+
+{% endif %}
+{% for article in category.articles %}
+▸ {{ article.title }}
+  {{ article.author }} · {{ article.feed_name }}
+{% if article.summary %}
+  {{ article.summary }}
+{% endif %}
+  {{ article.url }}
+
+{% endfor %}
+{% endfor %}
+{{ '=' * 50 }}
+Generated in {{ "%.1f"|format(digest.processing_time_seconds) }}s
+Powered by Claude + Feed Agent

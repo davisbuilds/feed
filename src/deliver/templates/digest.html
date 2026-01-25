@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto;">
+    <!-- Header -->
+    <tr>
+        <td class="header">
+            <h1>📬 Your Daily Digest</h1>
+            <div class="date">{{ digest.date.strftime('%A, %B %d, %Y') }}</div>
+        </td>
+    </tr>
+    
+    <!-- Content -->
+    <tr>
+        <td class="content">
+            <!-- Stats -->
+            <p style="font-size: 14px; color: #71717a; text-align: center; margin-bottom: 24px;">
+                {{ digest.total_articles }} articles from {{ digest.total_feeds }} sources
+            </p>
+            
+            <!-- Overall Themes -->
+            {% if digest.overall_themes %}
+            <div class="summary-box">
+                <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #71717a;">Today's Themes</h3>
+                <p style="font-size: 16px; color: #18181b;">
+                    {% for theme in digest.overall_themes %}
+                    {{ theme }}{% if not loop.last %} • {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+            {% endif %}
+            
+            <!-- Categories -->
+            {% for category in digest.categories %}
+            <div class="category">
+                <div class="category-header">
+                    <span class="category-badge">{{ category.name }}</span>
+                    <span style="margin-left: 8px; font-size: 13px; color: #71717a;">{{ category.article_count }} article{% if category.article_count != 1 %}s{% endif %}</span>
+                </div>
+                
+                <!-- Category Synthesis -->
+                {% if category.synthesis %}
+                <p style="font-size: 15px; color: #52525b; margin-bottom: 20px; font-style: italic;">
+                    {{ category.synthesis }}
+                </p>
+                {% endif %}
+                
+                <!-- Key Takeaways -->
+                {% if category.top_takeaways %}
+                <div style="background-color: #fefce8; border-left: 3px solid #eab308; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
+                    <p style="font-size: 12px; font-weight: 600; color: #854d0e; text-transform: uppercase; margin-bottom: 8px;">Key Takeaways</p>
+                    <ul style="margin: 0; padding-left: 16px;">
+                        {% for takeaway in category.top_takeaways[:3] %}
+                        <li style="font-size: 14px; color: #713f12; margin-bottom: 4px;">{{ takeaway }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Articles -->
+                {% for article in category.articles %}
+                <div class="article">
+                    <div class="article-title">
+                        <a href="{{ article.url }}" style="color: #18181b;">{{ article.title }}</a>
+                    </div>
+                    <div class="article-meta">
+                        {{ article.author }} · {{ article.feed_name }} · {{ article.published.strftime('%b %d') }}
+                    </div>
+                    {% if article.summary %}
+                    <div class="article-summary">
+                        {{ article.summary }}
+                    </div>
+                    {% endif %}
+                    {% if article.key_takeaways %}
+                    <ul class="article-takeaways">
+                        {% for takeaway in article.key_takeaways[:2] %}
+                        <li>{{ takeaway }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <a href="{{ article.url }}" class="read-link">Read article →</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </td>
+    </tr>
+    
+    <!-- Footer -->
+    <tr>
+        <td class="footer">
+            <p>
+                Generated in {{ "%.1f"|format(digest.processing_time_seconds) }}s
+                <br>
+                <span style="color: #a1a1aa;">Powered by Claude + Feed Agent</span>
+            </p>
+        </td>
+    </tr>
+</table>
+{% endblock %}
