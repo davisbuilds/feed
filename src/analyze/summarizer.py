@@ -89,6 +89,7 @@ class Summarizer:
                     system_instruction=ARTICLE_SUMMARY_SYSTEM,
                     response_mime_type="application/json",
                     response_schema=ArticleSummaryResponse,
+                    http_options=types.HttpOptions(timeout=120_000),
                 )
             )
             

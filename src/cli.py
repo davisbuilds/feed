@@ -163,14 +163,15 @@ def run(
             console.print(f"  ✓ Email ID: {send_result.email_id}")
         else:
             console.print(f"  [red]✗ Send failed: {send_result.error}[/red]")
+            raise typer.Exit(code=1)
     else:
         console.print("\n[dim]No digest to send[/dim]")
-    
+
     # Summary
     total_time = ingest_result.duration_seconds
     if analysis_result:
         total_time += analysis_result.duration_seconds
-    
+
     console.print(Panel.fit(
         f"[bold green]✓ Complete[/bold green] in {total_time:.1f}s",
         border_style="green",
@@ -275,6 +276,7 @@ def send(
         console.print(f"  Email ID: {result.email_id}")
     else:
         console.print(f"[red]✗ Send failed: {result.error}[/red]")
+        raise typer.Exit(code=1)
 
 
 @app.command()
@@ -429,7 +431,15 @@ def config() -> None:
 
 def main() -> None:
     """Entry point."""
-    app()
+    try:
+        app()
+    except KeyboardInterrupt:
+        console.print("\n[dim]Aborted.[/dim]")
+        raise SystemExit(130)
+    except Exception as e:
+        console.print(f"\n[red]Unexpected error:[/red] {e}")
+        console.print("[dim]Run with --verbose for more details.[/dim]")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

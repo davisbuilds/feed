@@ -130,7 +130,8 @@ class DigestBuilder:
                     config=types.GenerateContentConfig(
                         system_instruction=DIGEST_SYNTHESIS_SYSTEM,
                         response_mime_type="application/json",
-                        response_schema=CategorySynthesisResponse
+                        response_schema=CategorySynthesisResponse,
+                        http_options=types.HttpOptions(timeout=120_000),
                     )
                 )
 
@@ -196,7 +197,8 @@ class DigestBuilder:
                 config=types.GenerateContentConfig(
                     system_instruction=OVERALL_SYNTHESIS_SYSTEM,
                     response_mime_type="application/json",
-                    response_schema=OverallSynthesisResponse
+                    response_schema=OverallSynthesisResponse,
+                    http_options=types.HttpOptions(timeout=120_000),
                 )
             )
 
