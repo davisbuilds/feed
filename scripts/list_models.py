@@ -1,7 +1,5 @@
 """List available models for the configured LLM provider."""
 
-from google import genai
-
 from src.config import get_settings
 
 
@@ -14,6 +12,16 @@ def main() -> int:
             "Model listing is currently implemented only for gemini; "
             f"current provider is {settings.llm_provider}."
         )
+        return 1
+
+    try:
+        from google import genai
+    except ImportError as exc:
+        print(
+            "Gemini model listing requires the gemini dependency. "
+            "Install it with: uv sync --extra gemini"
+        )
+        print(f"Import error: {exc}")
         return 1
 
     client = genai.Client(api_key=settings.llm_api_key)

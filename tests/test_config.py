@@ -48,3 +48,19 @@ def test_get_settings_singleton_uses_new_fields(monkeypatch) -> None:
     assert settings.llm_provider == "gemini"
     assert settings.llm_api_key == "singleton-key"
     assert settings.llm_model == "gemini-3-flash-preview"
+
+
+def test_ignores_legacy_gemini_model_for_non_gemini_provider(monkeypatch) -> None:
+    """Legacy GEMINI_MODEL should not override non-Gemini provider defaults."""
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3-flash-preview")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+
+    settings = Settings()
+
+    assert settings.llm_provider == "openai"
+    assert settings.llm_model == "gpt-4o-mini"

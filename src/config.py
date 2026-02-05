@@ -73,6 +73,18 @@ class Settings(BaseSettings):
     def apply_llm_defaults(self) -> Self:
         """Fill provider-specific model defaults when omitted."""
         provider = self.llm_provider
+
+        # Migration safety: if a legacy GEMINI_MODEL is present but the selected
+        # provider is not Gemini, ignore it and apply the provider default.
+        # This prevents accidentally passing a Gemini model name to OpenAI or
+        # Anthropic during staged env-var migrations.
+        if (
+            provider != "gemini"
+            and self.llm_model
+            and self.llm_model == PROVIDER_DEFAULTS["gemini"]
+        ):
+            self.llm_model = None
+
         if self.llm_model is None:
             self.llm_model = PROVIDER_DEFAULTS[provider]
         return self
