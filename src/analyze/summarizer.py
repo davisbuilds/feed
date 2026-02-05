@@ -46,7 +46,7 @@ class Summarizer:
         if client is None:
             settings = get_settings()
             client = create_client(
-                provider="gemini",
+                provider=settings.llm_provider,
                 api_key=settings.llm_api_key,
                 model=settings.llm_model,
             )

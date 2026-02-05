@@ -17,17 +17,27 @@ def create_client(provider: Provider, api_key: str, model: str | None = None) ->
     """Create an LLM client for the given provider."""
     resolved_model = model or PROVIDER_DEFAULTS[provider]
 
-    match provider:
-        case "gemini":
-            from .gemini import GeminiClient
+    try:
+        match provider:
+            case "gemini":
+                from .gemini import GeminiClient
 
-            return GeminiClient(api_key=api_key, model=resolved_model)
-        case "openai":
-            raise LLMError("OpenAI client is not implemented yet")
-        case "anthropic":
-            raise LLMError("Anthropic client is not implemented yet")
-        case _:
-            raise LLMError(f"Unknown LLM provider: {provider}")
+                return GeminiClient(api_key=api_key, model=resolved_model)
+            case "openai":
+                from .openai import OpenAIClient
+
+                return OpenAIClient(api_key=api_key, model=resolved_model)
+            case "anthropic":
+                from .anthropic import AnthropicClient
+
+                return AnthropicClient(api_key=api_key, model=resolved_model)
+            case _:
+                raise LLMError(f"Unknown LLM provider: {provider}")
+    except ImportError as exc:
+        raise LLMError(
+            f"Missing dependency for provider '{provider}'. "
+            f"Install the '{provider}' extra to continue."
+        ) from exc
 
 
 __all__ = [

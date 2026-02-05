@@ -206,7 +206,7 @@ def ingest() -> None:
 
 @app.command()
 def analyze() -> None:
-    """Summarize pending articles with Claude."""
+    """Summarize pending articles with the configured LLM."""
     settings = _load_settings()
     
     db = Database(settings.data_dir / "articles.db")
