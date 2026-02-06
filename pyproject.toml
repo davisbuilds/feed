@@ -37,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-feed = "src.cli:main"
+feed = "src.cli:cli"
 
 [tool.ruff]
 line-length = 100
