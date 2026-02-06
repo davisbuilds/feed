@@ -9,12 +9,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.llm import PROVIDER_DEFAULTS
 
+# XDG config directory for user configuration
+XDG_CONFIG_PATH = Path.home() / ".config" / "feed"
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[
+            XDG_CONFIG_PATH / "config.env",  # User config (lower priority)
+            ".env",  # Project .env (higher priority)
+        ],
         env_file_encoding="utf-8",
         extra="ignore",
     )
