@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     lookback_hours: int = Field(default=24, description="Hours to look back for new articles")
     max_tokens_per_summary: int = Field(default=500, description="Max tokens per article summary")
 
+    # Retry & cache
+    llm_retries: int = Field(default=2, ge=0, le=5, description="Max LLM retry attempts")
+    llm_timeout: int = Field(default=120, ge=10, description="LLM timeout in seconds")
+    cache_ttl_days: int = Field(default=7, ge=1, description="Cache TTL in days")
+
     # Paths
     config_dir: Path = Field(default=Path("config"), description="Config directory")
     data_dir: Path = Field(default=Path("data"), description="Data directory")
