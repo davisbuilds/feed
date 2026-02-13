@@ -19,6 +19,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import click
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -90,28 +91,48 @@ def version_callback(value: bool):
         raise typer.Exit()
 
 
-_QUICK_REF_LINES = [
-    "",
-    "Quick Reference:",
-    "  run      [--send] [--format rich|text|json] [--no-cache]",
-    "  ingest",
-    "  analyze  [--format rich|text|json] [--no-cache]",
-    "  send     [--test] [--format rich|text|json]",
-    "  test     [--url URL | --name NAME | --all] [--strict] [--timeout N]",
-    "  status   [--json]",
-    "  config",
-    "  cache    [--clear]",
-    "  init     [--force]",
+_QUICK_REF_ITEMS = [
+    ("run", "[--send] [--format rich|text|json] [--no-cache]"),
+    ("ingest", ""),
+    ("analyze", "[--format rich|text|json] [--no-cache]"),
+    ("send", "[--test] [--format rich|text|json]"),
+    ("test", "[--url URL | --name NAME | --all] [--strict] [--timeout N]"),
+    ("status", "[--json]"),
+    ("config", ""),
+    ("cache", "[--clear]"),
+    ("init", "[--force]"),
 ]
 
 
 class _HelpGroup(typer.core.TyperGroup):
-    """Custom group that appends a quick-reference section to --help."""
+    """Custom group that adds a boxed quick-reference section to --help."""
 
     def format_help(self, ctx, formatter):
-        super().format_help(ctx, formatter)
-        for line in _QUICK_REF_LINES:
-            formatter.write(line + "\n")
+        if not typer.core.HAS_RICH or self.rich_markup_mode is None:
+            super().format_help(ctx, formatter)
+            with formatter.section("Quick Reference"):
+                formatter.write_dl(_QUICK_REF_ITEMS)
+            return
+
+        from typer import rich_utils
+
+        rich_utils.rich_format_help(
+            obj=self,
+            ctx=ctx,
+            markup_mode=self.rich_markup_mode,
+        )
+
+        quick_commands = [
+            click.Command(name=command, help=usage, short_help=usage)
+            for command, usage in _QUICK_REF_ITEMS
+        ]
+        rich_utils._print_commands_panel(
+            name="Quick Reference",
+            commands=quick_commands,
+            markup_mode=self.rich_markup_mode,
+            console=rich_utils._get_rich_console(),
+            cmd_len=max(len(command) for command, _ in _QUICK_REF_ITEMS),
+        )
 
 
 app = typer.Typer(
