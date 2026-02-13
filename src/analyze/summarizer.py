@@ -1,8 +1,13 @@
 """Article summarization via provider-agnostic LLM client."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
+
+if TYPE_CHECKING:
+    from src.storage.cache import CacheStore
 
 from pydantic import BaseModel, Field
 
@@ -53,8 +58,29 @@ class Summarizer:
 
         self.client = client
 
-    def summarize_article(self, article: Article) -> SummaryResult:
+    def summarize_article(
+        self,
+        article: Article,
+        cache: CacheStore | None = None,
+        model_name: str | None = None,
+    ) -> SummaryResult:
         """Generate a summary for a single article."""
+        # Check cache first
+        if cache and model_name:
+            from src.storage.cache import make_cache_key
+
+            cache_key = make_cache_key(article.id, model_name)
+            try:
+                cached = cache.get("summary", cache_key)
+                if cached is not None:
+                    logger.info(f"Cache hit: {article.title[:50]}...")
+                    return SummaryResult(**cached)
+            except Exception as exc:
+                logger.warning(f"Cache read failed, falling through to LLM: {exc}")
+                cache_key = None
+        else:
+            cache_key = None
+
         logger.info(f"Summarizing: {article.title[:50]}...")
 
         content = article.content
@@ -79,7 +105,7 @@ class Summarizer:
             tokens_used = response.input_tokens + response.output_tokens
 
             logger.debug(f"Summary generated ({tokens_used} tokens)")
-            return SummaryResult(
+            result = SummaryResult(
                 success=True,
                 article_id=article.id,
                 summary=parsed.get("summary"),
@@ -88,6 +114,16 @@ class Summarizer:
                 tokens_used=tokens_used,
                 error=None,
             )
+
+            # Store in cache on success — isolated so a cache
+            # write failure never drops a valid summary.
+            if cache and cache_key:
+                try:
+                    cache.set("summary", cache_key, dict(result))
+                except Exception as cache_exc:
+                    logger.warning(f"Cache write failed: {cache_exc}")
+
+            return result
 
         except Exception as exc:
             logger.error(f"Summarization error: {exc}")
@@ -105,6 +141,8 @@ class Summarizer:
         self,
         articles: list[Article],
         on_progress: Callable[[int, int, Article], None] | None = None,
+        cache: CacheStore | None = None,
+        model_name: str | None = None,
     ) -> list[SummaryResult]:
         """Summarize multiple articles concurrently."""
         if not articles:
@@ -113,7 +151,9 @@ class Summarizer:
         results: list[SummaryResult] = []
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_article = {
-                executor.submit(self.summarize_article, article): article for article in articles
+                executor.submit(
+                    self.summarize_article, article, cache, model_name
+                ): article for article in articles
             }
 
             for i, future in enumerate(as_completed(future_to_article)):

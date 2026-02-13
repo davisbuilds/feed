@@ -106,3 +106,34 @@ def test_feed_config_rejects_duplicate_urls(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="Duplicate feed URL"):
         FeedConfig(feeds_path)
+
+
+def test_settings_retry_defaults(monkeypatch) -> None:
+    """Retry and cache settings should have sensible defaults."""
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+
+    settings = Settings()
+
+    assert settings.llm_retries == 2
+    assert settings.llm_timeout == 120
+    assert settings.cache_ttl_days == 7
+
+
+def test_settings_retry_custom_values(monkeypatch) -> None:
+    """Retry and cache settings should be configurable via env vars."""
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+    monkeypatch.setenv("LLM_RETRIES", "4")
+    monkeypatch.setenv("LLM_TIMEOUT", "60")
+    monkeypatch.setenv("CACHE_TTL_DAYS", "14")
+
+    settings = Settings()
+
+    assert settings.llm_retries == 4
+    assert settings.llm_timeout == 60
+    assert settings.cache_ttl_days == 14

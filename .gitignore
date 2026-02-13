@@ -1,6 +1,7 @@
 # Environment
-.env
+*.env
 .env.local
+.local.json
 .venv/
 venv/
 
@@ -29,6 +30,7 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+._*
 
 # Testing
 .pytest_cache/
@@ -44,3 +46,8 @@ htmlcov/
 # Logs
 *.log
 logs/
+tmp/
+temp/
+
+# Misc
+**/archive/

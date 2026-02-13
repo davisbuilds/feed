@@ -42,12 +42,6 @@ FormatChoice = typer.Option(
 
 __version__ = "0.1.0"
 
-app = typer.Typer(
-    name="feed",
-    help="Feed Agent - Your personal newsletter intelligence",
-    no_args_is_help=True,
-    add_completion=False,
-)
 console = Console()
 
 # Global state
@@ -96,6 +90,40 @@ def version_callback(value: bool):
         raise typer.Exit()
 
 
+_QUICK_REF_LINES = [
+    "",
+    "Quick Reference:",
+    "  run      [--send] [--format rich|text|json] [--no-cache]",
+    "  ingest",
+    "  analyze  [--format rich|text|json] [--no-cache]",
+    "  send     [--test] [--format rich|text|json]",
+    "  test     [--url URL | --name NAME | --all] [--strict] [--timeout N]",
+    "  status   [--json]",
+    "  config",
+    "  cache    [--clear]",
+    "  init     [--force]",
+]
+
+
+class _HelpGroup(typer.core.TyperGroup):
+    """Custom group that appends a quick-reference section to --help."""
+
+    def format_help(self, ctx, formatter):
+        super().format_help(ctx, formatter)
+        for line in _QUICK_REF_LINES:
+            formatter.write(line + "\n")
+
+
+app = typer.Typer(
+    name="feed",
+    help="Feed - Your newsletter digest CLI",
+    no_args_is_help=True,
+    add_completion=False,
+    cls=_HelpGroup,
+    rich_markup_mode="markdown",
+)
+
+
 @app.callback()
 def main(
     verbose: bool = typer.Option(
@@ -113,7 +141,7 @@ def main(
     ),
 ):
     """
-    Feed Agent CLI
+    Feed - Your newsletter digest CLI
     """
     state["verbose"] = verbose
     if verbose:
@@ -319,6 +347,7 @@ def _print_digest_rich(digest: DailyDigest) -> None:
 def run(
     send: bool = typer.Option(False, "--send", help="Send email instead of terminal output"),
     output_format: str = FormatChoice,
+    no_cache: bool = typer.Option(False, "--no-cache", help="Skip cache, re-summarize all"),
 ) -> None:
     """Run the full digest pipeline: ingest → analyze → send."""
     settings = _load_settings()
@@ -371,7 +400,7 @@ def run(
             console=console,
         ) as progress:
             task = progress.add_task(f"Summarizing {len(pending)} articles...", total=None)
-            analysis_result = run_analysis(db=db)
+            analysis_result = run_analysis(db=db, no_cache=no_cache)
             progress.remove_task(task)
 
         console.print(f"  ✓ Analyzed {analysis_result.articles_analyzed} articles")
@@ -617,6 +646,7 @@ def analyze(
         "-f",
         help="Show digest after analysis (rich, text, or json)",
     ),
+    no_cache: bool = typer.Option(False, "--no-cache", help="Skip cache, re-summarize all"),
 ) -> None:
     """Summarize pending articles with the configured LLM."""
     settings = _load_settings()
@@ -632,7 +662,7 @@ def analyze(
 
     from src.analyze import run_analysis
 
-    result = run_analysis(db=db)
+    result = run_analysis(db=db, no_cache=no_cache)
 
     table = Table(title="Analysis Results")
     table.add_column("Metric", style="cyan")
@@ -869,6 +899,34 @@ def config() -> None:
         raise typer.Exit(code=1)
     else:
         console.print("[green]✓ Configuration valid[/green]")
+
+
+@app.command("cache")
+def cache_cmd(
+    clear: bool = typer.Option(False, "--clear", help="Clear all cached LLM responses"),
+) -> None:
+    """Show cache statistics or clear cached responses."""
+    settings = _load_settings()
+
+    from src.storage.cache import CacheStore
+
+    cache = CacheStore(
+        db_path=settings.data_dir / "articles.db",
+        default_ttl_days=settings.cache_ttl_days,
+    )
+
+    if clear:
+        count = cache.clear()
+        console.print(f"[green]Cleared {count} cached entries[/green]")
+        return
+
+    stats = cache.stats()
+    table = Table(title="Cache Statistics")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green")
+    table.add_row("Total entries", str(stats["total_entries"]))
+    table.add_row("Expired entries", str(stats["expired_entries"]))
+    console.print(table)
 
 
 def cli() -> None:
