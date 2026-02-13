@@ -115,9 +115,13 @@ class Summarizer:
                 error=None,
             )
 
-            # Store in cache on success
+            # Store in cache on success — isolated so a cache
+            # write failure never drops a valid summary.
             if cache and cache_key:
-                cache.set("summary", cache_key, dict(result))
+                try:
+                    cache.set("summary", cache_key, dict(result))
+                except Exception as cache_exc:
+                    logger.warning(f"Cache write failed: {cache_exc}")
 
             return result
 

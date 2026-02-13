@@ -63,7 +63,7 @@ def run_analysis(
         from src.storage.cache import CacheStore
 
         cache = CacheStore(
-            db_path=settings.data_dir / "articles.db",
+            db_path=db.db_path,
             default_ttl_days=settings.cache_ttl_days,
         )
 
