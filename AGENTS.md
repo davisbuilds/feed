@@ -112,7 +112,7 @@ The project is fully functional with multi-provider LLM support, XDG-based confi
 - JSON output for `feed status`.
 - CLI robustness fixes (exit codes, timeouts, error handling).
 - `./feed` wrapper script for simplified invocation.
-- Project renamed from feed-agent to feed.
+- Project renamed from Feed Agent to Feed.
 - LLM retry with exponential backoff (`src/llm/retry.py`).
 - SQLite-backed response cache with TTL (`src/storage/cache.py`).
 - `feed cache` command and `--no-cache` flag on `run`/`analyze`.

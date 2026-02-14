@@ -18,7 +18,7 @@ from src.models import Article
 logger = get_logger("feeds")
 
 FEED_AGENT_HEADERS = {
-    "User-Agent": "FeedAgent/1.0",
+    "User-Agent": "Feed/1.0",
     "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
 }
 
@@ -94,7 +94,7 @@ def fetch_feed(
     try:
         response = None
         for profile_name, headers in (
-            ("feed-agent", FEED_AGENT_HEADERS),
+            ("feed", FEED_AGENT_HEADERS),
             ("browser", BROWSER_HEADERS),
         ):
             attempts += 1
@@ -117,7 +117,7 @@ def fetch_feed(
                 and headers is FEED_AGENT_HEADERS
             ):
                 logger.debug(
-                    f"{feed_name}: got {status_code} with FeedAgent headers, retrying "
+                    f"{feed_name}: got {status_code} with Feed headers, retrying "
                     "with browser-like headers"
                 )
                 continue

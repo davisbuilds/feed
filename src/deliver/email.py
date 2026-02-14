@@ -119,19 +119,19 @@ class EmailSender:
             response = resend.Emails.send({
                 "from": self.from_address,
                 "to": [recipient],
-                "subject": "🧪 Feed Agent - Test Email",
+                "subject": "🧪 Feed - Test Email",
                 "html": """
                     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                         <h1 style="color: #18181b;">Test Email</h1>
                         <p style="color: #3f3f46;">
-                            If you're reading this, your Feed Agent email configuration is working correctly!
+                            If you're reading this, your Feed email configuration is working correctly!
                         </p>
                         <p style="color: #71717a; font-size: 14px;">
                             Sent at: {time}
                         </p>
                     </div>
                 """.format(time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                "text": "Test email from Feed Agent. If you're reading this, your configuration is working!",
+                "text": "Test email from Feed. If you're reading this, your configuration is working!",
             })
             
             email_id = response.get("id") if isinstance(response, dict) else str(response)

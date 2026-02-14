@@ -15,15 +15,30 @@ feeds:
     priority: 5
     notes: Ben Thompson's analysis - always worth reading
 
+  # General
+  astral_codex:
+    url: https://astralcodexten.substack.com/feed/
+    category: General
+    priority: 3
+    notes: Scott Alexander's newsletter
+  
+  china_talk:
+    url: https://chinatalk.media/feed/
+    category: General
+    priority: 3
+    notes: Jordan Schneider on China's tech and policy
+
+  # AI
   simon_willison:
     url: https://simonwillison.net/atom/everything/
     category: AI & Development
     priority: 5
+    notes: Simon Willison's everything feed
 
   one_useful_thing:
     url: https://www.oneusefulthing.org/feed/
     category: AI & Development
-    priority: 4
+    priority: 5
     notes: Prof. Ethan Mollick on AI implications
 
   interconnects:
@@ -35,8 +50,8 @@ feeds:
   hyperdimensional:
     url: https://hyperdimensional.co/feed/
     category: AI & Development
-    priority: 3
-    notes: AI musings
+    priority: 4
+    notes: Dean Ball's AI musings
 
   steipete:
     url: https://steipete.me/rss.xml
@@ -48,13 +63,31 @@ feeds:
     url: https://www.bensbites.com/feed/
     category: AI & Development
     priority: 4
-    notes: Daily AI news digest
+    notes: Ben Trossel's daily AI news digest
+
+  epoch_ai:
+    url: https://epochai.substack.com/feed/
+    category: AI & Development
+    priority: 4
+    notes: Epoch AI's analysis and data
+  
+  import_ai:
+    url: https://importai.substack.com/feed/
+    category: AI & Development
+    priority: 4
+    notes: Jack Clark's AI analysis
+
+  latent_space:
+    url: https://latent.space/feed/
+    category: AI & Development
+    priority: 4
+    notes: Swyx & Alessio on AI
 
   # Example Substacks (replace with your actual subscriptions)
-  example_newsletter:
-    url: https://example.substack.com/feed
-    category: General
-    priority: 3
+  # example_newsletter:
+  #   url: https://example.substack.com/feed
+  #   category: General
+  #   priority: 3
 
 # Categories define the sections in your digest
 # Articles are grouped by category, then sorted by priority within each
