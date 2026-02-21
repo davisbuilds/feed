@@ -28,6 +28,12 @@ feeds:
     priority: 3
     notes: Jordan Schneider on China's tech and policy
 
+  greenwald:
+    url: https://greenwald.substack.com/feed
+    category: General
+    priority: 3
+    notes: Glenn Greenwald on politics and media
+
   # AI
   simon_willison:
     url: https://simonwillison.net/atom/everything/

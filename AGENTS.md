@@ -47,6 +47,14 @@ Settings are loaded via Pydantic Settings from two env-file locations (higher pr
 
 The XDG path is defined in `src.config.XDG_CONFIG_PATH` (`~/.config/feed/`). The `feed init` wizard writes `config.env` and copies `feeds.yaml` into this directory, so users can run `feed` from any location.
 
+### Runtime Resolution Notes
+
+- Do not assume `config/feeds.yaml` is always active.
+- Active feed path is `settings.config_dir / "feeds.yaml"` and `settings.config_dir` is driven by env resolution.
+- Env precedence is: `~/.config/feed/config.env` then `.env` in current working directory (cwd `.env` overrides XDG).
+- Before editing feed configuration for a user, verify active paths with `feed config` (or `uv run python -m src.cli config` in repo context).
+- When users ask to "standardize" feeds, compare and sync both `config/feeds.yaml` and `~/.config/feed/feeds.yaml` as requested.
+
 Key config variables:
 
 | Variable | Description | Default |

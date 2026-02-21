@@ -14,15 +14,15 @@
     <tr>
         <td class="content">
             <!-- Stats -->
-            <p style="font-size: 14px; color: #71717a; text-align: center; margin-bottom: 24px;">
+            <p style="font-size: 14px; color: #94a3b8; text-align: center; margin-bottom: 24px;">
                 {{ digest.total_articles }} articles from {{ digest.total_feeds }} sources
             </p>
             
             <!-- Overall Themes -->
             {% if digest.overall_themes %}
             <div class="summary-box">
-                <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #71717a;">Today's Themes</h3>
-                <p style="font-size: 16px; color: #18181b;">
+                <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Today's Themes</h3>
+                <p style="font-size: 16px; color: #f8fafc;">
                     {% for theme in digest.overall_themes %}
                     {{ theme }}{% if not loop.last %} • {% endif %}
                     {% endfor %}
@@ -35,23 +35,23 @@
             <div class="category">
                 <div class="category-header">
                     <span class="category-badge">{{ category.name }}</span>
-                    <span style="margin-left: 8px; font-size: 13px; color: #71717a;">{{ category.article_count }} article{% if category.article_count != 1 %}s{% endif %}</span>
+                    <span style="margin-left: 8px; font-size: 13px; color: #94a3b8;">{{ category.article_count }} article{% if category.article_count != 1 %}s{% endif %}</span>
                 </div>
                 
                 <!-- Category Synthesis -->
                 {% if category.synthesis %}
-                <p style="font-size: 15px; color: #52525b; margin-bottom: 20px; font-style: italic;">
+                <p style="font-size: 15px; color: #cbd5e1; margin-bottom: 20px; font-style: italic;">
                     {{ category.synthesis }}
                 </p>
                 {% endif %}
                 
                 <!-- Key Takeaways -->
                 {% if category.top_takeaways %}
-                <div style="background-color: #fefce8; border-left: 3px solid #eab308; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
-                    <p style="font-size: 12px; font-weight: 600; color: #854d0e; text-transform: uppercase; margin-bottom: 8px;">Key Takeaways</p>
+                <div style="background-color: #332701; border-left: 3px solid #f59e0b; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
+                    <p style="font-size: 12px; font-weight: 600; color: #fcd34d; text-transform: uppercase; margin-bottom: 8px;">Key Takeaways</p>
                     <ul style="margin: 0; padding-left: 16px;">
                         {% for takeaway in category.top_takeaways[:3] %}
-                        <li style="font-size: 14px; color: #713f12; margin-bottom: 4px;">{{ takeaway }}</li>
+                        <li style="font-size: 14px; color: #fde68a; margin-bottom: 4px;">{{ takeaway }}</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -61,7 +61,7 @@
                 {% for article in category.articles %}
                 <div class="article">
                     <div class="article-title">
-                        <a href="{{ article.url }}" style="color: #18181b;">{{ article.title }}</a>
+                        <a href="{{ article.url }}" style="color: #f8fafc;">{{ article.title }}</a>
                     </div>
                     <div class="article-meta">
                         {{ article.author }} · {{ article.feed_name }} · {{ article.published.strftime('%b %d') }}
@@ -92,7 +92,7 @@
             <p>
                 Generated in {{ "%.1f"|format(digest.processing_time_seconds) }}s
                 <br>
-                <span style="color: #a1a1aa;">Powered by Feed</span>
+                <span style="color: #64748b;">Powered by Feed</span>
             </p>
         </td>
     </tr>

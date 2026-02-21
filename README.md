@@ -89,6 +89,14 @@ Config is loaded from two locations (higher priority wins):
 1. `~/.config/feed/config.env` — user-level (XDG)
 2. `.env` in the current directory — project-level override
 
+#### Config Resolution (Important)
+
+- `feed` always evaluates both config sources above. A `.env` in your current working directory overrides values from `~/.config/feed/config.env`.
+- The active feeds file is resolved as `CONFIG_DIR/feeds.yaml`.
+- If `CONFIG_DIR` is not set, it defaults to `config/`, which is relative to the current working directory.
+- This means running from the repo often uses `./config/feeds.yaml`, while true run-anywhere behavior uses `CONFIG_DIR=~/.config/feed`.
+- Run `feed config` to see exactly which env file and config directory are active.
+
 Configure your feeds in `config/feeds.yaml` (or `~/.config/feed/feeds.yaml` when using XDG):
 
 ```yaml
