@@ -137,7 +137,7 @@ _QUICK_REF_ITEMS = [
     ("send", "[--test] [--format rich|text|json]"),
     ("test", "[--url URL | --name NAME | --all] [--strict] [--timeout N]"),
     ("status", "[--json]"),
-    ("config", ""),
+    ("config", "[--json]"),
     ("cache", "[--clear]"),
     ("init", "[--force]"),
 ]
@@ -1109,9 +1109,63 @@ def status(
         console.print(recent_table)
 
 
+def _redact_key(key: str) -> str:
+    """Show first 10 chars of an API key, redact the rest."""
+    if len(key) <= 10:
+        return "***"
+    return key[:10] + "..."
+
+
+def _config_json() -> None:
+    """Output full configuration as JSON for programmatic consumption."""
+    try:
+        settings = get_settings()
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+        raise typer.Exit(code=1) from None
+
+    data = settings.model_dump(mode="json")
+
+    # Redact sensitive keys
+    for field in ("llm_api_key", "resend_api_key"):
+        if data.get(field):
+            data[field] = _redact_key(data[field])
+
+    # Resolve config paths to absolute
+    data["config_dir"] = str(settings.config_dir.resolve())
+    data["data_dir"] = str(settings.data_dir.resolve())
+    data["config_env_paths"] = [
+        str(XDG_CONFIG_PATH / "config.env"),
+        str(Path(".env").resolve()),
+    ]
+
+    # Add feeds
+    feeds_path = settings.config_dir / "feeds.yaml"
+    data["feeds_path"] = str(feeds_path.resolve())
+    try:
+        feed_config = FeedConfig(feeds_path)
+        feeds = feed_config.feeds
+        data["feeds"] = {
+            name: {"url": cfg.get("url", ""), "category": cfg.get("category", "Uncategorized")}
+            for name, cfg in feeds.items()
+        }
+        data["feed_count"] = len(feeds)
+    except Exception as e:
+        data["feeds"] = {}
+        data["feed_count"] = 0
+        data["feeds_error"] = str(e)
+
+    print(json.dumps(data, indent=2, default=str))
+
+
 @app.command()
-def config() -> None:
+def config(
+    json_format: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
     """Verify configuration and show settings."""
+    if json_format:
+        return _config_json()
+
     console.print("[bold]Verifying configuration...[/bold]\n")
 
     # Show config file locations

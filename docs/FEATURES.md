@@ -51,7 +51,7 @@ Product-surface reference for Feed.
 | `send` | `--test`, `--format` | Email digest delivery |
 | `test` | `--url`, `--name`, `--all`, `--strict` | Feed URL validation |
 | `status` | `--json` | Pipeline statistics |
-| `config` | | Show active configuration |
+| `config` | `--json` | Show active configuration |
 | `cache` | `--clear` | Cache statistics or clear |
 
 ## Configuration Variables

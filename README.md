@@ -95,7 +95,7 @@ Config is loaded from two locations (higher priority wins):
 - The active feeds file is resolved as `CONFIG_DIR/feeds.yaml`.
 - If `CONFIG_DIR` is not set, it defaults to `config/`, which is relative to the current working directory.
 - This means running from the repo often uses `./config/feeds.yaml`, while true run-anywhere behavior uses `CONFIG_DIR=~/.config/feed`.
-- Run `feed config` to see exactly which env file and config directory are active.
+- Run `feed config` to see exactly which env file and config directory are active. Use `feed config --json` for machine-readable output.
 
 Configure your feeds in `config/feeds.yaml` (or `~/.config/feed/feeds.yaml` when using XDG):
 
