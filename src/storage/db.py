@@ -7,12 +7,12 @@ Design decisions:
 - Indexes on common query patterns
 """
 
-import sqlite3
 import json
+import sqlite3
+from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Generator
 
 from src.models import Article, ArticleStatus
 
@@ -31,7 +31,7 @@ class Database:
             conn.executescript("""
                 -- Enable WAL mode for better concurrency
                 PRAGMA journal_mode=WAL;
-                
+
                 -- Articles table
                 CREATE TABLE IF NOT EXISTS articles (
                     id TEXT PRIMARY KEY,
@@ -51,17 +51,17 @@ class Database:
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
-                
+
                 -- Indexes for common queries
-                CREATE INDEX IF NOT EXISTS idx_articles_published 
+                CREATE INDEX IF NOT EXISTS idx_articles_published
                     ON articles(published DESC);
-                CREATE INDEX IF NOT EXISTS idx_articles_status 
+                CREATE INDEX IF NOT EXISTS idx_articles_status
                     ON articles(status);
-                CREATE INDEX IF NOT EXISTS idx_articles_feed 
+                CREATE INDEX IF NOT EXISTS idx_articles_feed
                     ON articles(feed_url);
-                CREATE INDEX IF NOT EXISTS idx_articles_category 
+                CREATE INDEX IF NOT EXISTS idx_articles_category
                     ON articles(category);
-                
+
                 -- Feed status tracking
                 CREATE TABLE IF NOT EXISTS feed_status (
                     feed_url TEXT PRIMARY KEY,
@@ -71,7 +71,7 @@ class Database:
                     last_error TEXT,
                     consecutive_failures INTEGER DEFAULT 0
                 );
-                
+
                 -- Digest history
                 CREATE TABLE IF NOT EXISTS digests (
                     id TEXT PRIMARY KEY,
@@ -111,7 +111,7 @@ class Database:
         """Check if an article already exists."""
         with self._connection() as conn:
             result = conn.execute(
-                "SELECT 1 FROM articles WHERE id = ?", 
+                "SELECT 1 FROM articles WHERE id = ?",
                 (article_id,)
             ).fetchone()
             return result is not None
@@ -152,34 +152,34 @@ class Database:
         """Get articles that need summarization."""
         with self._connection() as conn:
             rows = conn.execute("""
-                SELECT * FROM articles 
+                SELECT * FROM articles
                 WHERE status = 'pending'
                 ORDER BY published DESC
                 LIMIT ?
             """, (limit,)).fetchall()
-        
+
         return [self._row_to_article(row) for row in rows]
 
     def get_articles_since(
-        self, 
-        since: datetime, 
+        self,
+        since: datetime,
         status: ArticleStatus | None = None
     ) -> list[Article]:
         """Get articles published since a given time."""
         with self._connection() as conn:
             if status:
                 rows = conn.execute("""
-                    SELECT * FROM articles 
+                    SELECT * FROM articles
                     WHERE published >= ? AND status = ?
                     ORDER BY published DESC
                 """, (since.isoformat(), status.value)).fetchall()
             else:
                 rows = conn.execute("""
-                    SELECT * FROM articles 
+                    SELECT * FROM articles
                     WHERE published >= ?
                     ORDER BY published DESC
                 """, (since.isoformat(),)).fetchall()
-        
+
         return [self._row_to_article(row) for row in rows]
 
     def update_article_summary(
@@ -207,8 +207,8 @@ class Database:
             ))
 
     def update_article_status(
-        self, 
-        article_id: str, 
+        self,
+        article_id: str,
         status: ArticleStatus
     ) -> None:
         """Update article processing status."""
@@ -223,7 +223,7 @@ class Database:
     def _row_to_article(self, row: sqlite3.Row) -> Article:
         """Convert a database row to an Article model."""
         from dateutil.parser import parse as parse_date
-        
+
         return Article(
             id=row["id"],
             url=row["url"],
@@ -250,11 +250,13 @@ class Database:
     ) -> None:
         """Track feed fetch status."""
         with self._connection() as conn:
-            now = datetime.now(timezone.utc).isoformat()
-            
+            now = datetime.now(UTC).isoformat()
+
             if success:
                 conn.execute("""
-                    INSERT INTO feed_status (feed_url, feed_name, last_checked, last_success, consecutive_failures)
+                    INSERT INTO feed_status (
+                        feed_url, feed_name, last_checked, last_success, consecutive_failures
+                    )
                     VALUES (?, ?, ?, ?, 0)
                     ON CONFLICT(feed_url) DO UPDATE SET
                         feed_name = excluded.feed_name,
@@ -264,7 +266,9 @@ class Database:
                 """, (feed_url, feed_name, now, now))
             else:
                 conn.execute("""
-                    INSERT INTO feed_status (feed_url, feed_name, last_checked, last_error, consecutive_failures)
+                    INSERT INTO feed_status (
+                        feed_url, feed_name, last_checked, last_error, consecutive_failures
+                    )
                     VALUES (?, ?, ?, ?, 1)
                     ON CONFLICT(feed_url) DO UPDATE SET
                         feed_name = excluded.feed_name,

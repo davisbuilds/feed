@@ -3,14 +3,14 @@ RSS feed fetching with error handling and timeout management.
 """
 
 import hashlib
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from time import perf_counter
 from typing import NamedTuple
 
 import feedparser
 import httpx
-from dateutil.parser import parse as parse_date
 from dateutil.parser import ParserError
+from dateutil.parser import parse as parse_date
 
 from src.logging_config import get_logger
 from src.models import Article
@@ -19,7 +19,10 @@ logger = get_logger("feeds")
 
 FEED_AGENT_HEADERS = {
     "User-Agent": "Feed/1.0",
-    "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+    "Accept": (
+        "application/rss+xml, application/atom+xml, application/xml, "
+        "text/xml;q=0.9, */*;q=0.8"
+    ),
 }
 
 BROWSER_HEADERS = {
@@ -40,7 +43,7 @@ BOT_FILTER_RETRY_STATUS_CODES = {403, 404}
 
 class FeedResult(NamedTuple):
     """Result of fetching a feed."""
-    
+
     feed_url: str
     feed_name: str
     articles: list[Article]
@@ -71,7 +74,7 @@ def fetch_feed(
 ) -> FeedResult:
     """
     Fetch and parse an RSS feed.
-    
+
     Args:
         feed_url: URL of the RSS feed
         feed_name: Human-readable name for the feed
@@ -79,7 +82,7 @@ def fetch_feed(
         lookback_hours: Only include articles from this many hours ago
         max_articles: Maximum number of articles to return
         timeout: Request timeout in seconds
-    
+
     Returns:
         FeedResult with articles or error information
     """
@@ -171,7 +174,7 @@ def fetch_feed(
         actual_feed_name = feed.feed.get("title", feed_name)
 
         # Calculate cutoff time
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=lookback_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=lookback_hours)
 
         articles: list[Article] = []
 
@@ -270,7 +273,9 @@ def fetch_feed(
         )
 
 
-def _fetch_response(feed_url: str, timeout: int, headers: dict[str, str]) -> tuple[httpx.Response, float]:
+def _fetch_response(
+    feed_url: str, timeout: int, headers: dict[str, str]
+) -> tuple[httpx.Response, float]:
     """Fetch a feed URL and return (response, elapsed_ms)."""
     started = perf_counter()
     response = httpx.get(
@@ -300,21 +305,21 @@ def _parse_entry_date(entry: dict) -> datetime | None:
         if parsed := entry.get(field):
             try:
                 from time import mktime
-                return datetime.fromtimestamp(mktime(parsed), tz=timezone.utc)
+                return datetime.fromtimestamp(mktime(parsed), tz=UTC)
             except (ValueError, OverflowError):
                 continue
-    
+
     # Try string parsing as fallback
     for field in ["published", "updated", "created"]:
         if date_str := entry.get(field):
             try:
                 dt = parse_date(date_str)
                 if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
+                    dt = dt.replace(tzinfo=UTC)
                 return dt
             except (ValueError, ParserError):
                 continue
-    
+
     return None
 
 
@@ -323,17 +328,17 @@ def _extract_author(entry: dict) -> str:
     # Try author field
     if author := entry.get("author"):
         return author
-    
+
     # Try author_detail
-    if author_detail := entry.get("author_detail"):
-        if name := author_detail.get("name"):
-            return name
-    
+    if (author_detail := entry.get("author_detail")) and (
+        name := author_detail.get("name")
+    ):
+        return name
+
     # Try authors list
-    if authors := entry.get("authors"):
-        if authors and (name := authors[0].get("name")):
-            return name
-    
+    if (authors := entry.get("authors")) and (name := authors[0].get("name")):
+        return name
+
     return "Unknown"
 
 
@@ -344,19 +349,19 @@ def fetch_all_feeds(
 ) -> list[FeedResult]:
     """
     Fetch all configured feeds concurrently.
-    
+
     Args:
         feeds_config: Dictionary of feed configurations
         lookback_hours: Only include articles from this many hours ago
         max_articles_per_feed: Maximum articles per feed
-    
+
     Returns:
         List of FeedResults
     """
     import concurrent.futures
-    
+
     results: list[FeedResult] = []
-    
+
     # Prepare arguments for each feed
     fetch_args = []
     for feed_name, config in feeds_config.items():
@@ -364,19 +369,19 @@ def fetch_all_feeds(
         if not url:
             logger.warning(f"Feed {feed_name} has no URL configured")
             continue
-        
+
         category = config.get("category", "Uncategorized")
         fetch_args.append((url, feed_name, category))
-    
+
     # Execute concurrently
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_feed = {
             executor.submit(
-                fetch_feed, 
-                feed_url=url, 
-                feed_name=name, 
-                category=cat, 
-                lookback_hours=lookback_hours, 
+                fetch_feed,
+                feed_url=url,
+                feed_name=name,
+                category=cat,
+                lookback_hours=lookback_hours,
                 max_articles=max_articles_per_feed
             ): (name, url) for url, name, cat in fetch_args
         }

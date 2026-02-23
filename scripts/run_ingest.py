@@ -16,32 +16,32 @@ def main() -> None:
     """Run a test ingestion."""
     setup_logging("DEBUG")
     settings = get_settings()
-    
+
     print("=" * 60)
     print("Testing Ingestion Pipeline")
     print("=" * 60)
-    
+
     # Use test database
     db_path = settings.data_dir / "test_articles.db"
     # Ensure data directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     db = Database(db_path)
     print(f"\nUsing database: {db_path}")
-    
+
     # Load feeds
     feed_config = FeedConfig(settings.config_dir / "feeds.yaml")
     feeds = feed_config.feeds
     print(f"Found {len(feeds)} configured feeds:")
     for name, config in feeds.items():
         print(f"  • {name}: {config.get('url', 'NO URL')}")
-    
+
     print("\n" + "-" * 60)
     print("Running ingestion...")
     print("-" * 60 + "\n")
-    
+
     result = run_ingestion(db=db, feed_config=feed_config)
-    
+
     print("\n" + "=" * 60)
     print("Results")
     print("=" * 60)
@@ -52,21 +52,21 @@ def main() -> None:
     print(f"Articles new:     {result.articles_new}")
     print(f"Articles stored:  {result.articles_processed}")
     print(f"Duration:         {result.duration_seconds:.2f}s")
-    
+
     if result.errors:
         print("\nErrors:")
         for error in result.errors:
             print(f"  ✗ {error}")
-    
+
     # Show sample articles
     print("\n" + "-" * 60)
     print("Sample Articles")
     print("-" * 60)
-    
+
     articles = db.get_pending_articles(limit=5)
     if not articles:
         print("No articles found.")
-    
+
     for article in articles:
         print(f"\n📰 {article.title}")
         print(f"   Author: {article.author}")
