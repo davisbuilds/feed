@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 from src.deliver.renderer import EmailRenderer
-from src.models import Article, CategoryDigest, DailyDigest
+from src.models import Article, CategoryDigest, DailyDigest, NonObviousInsight
 
 
 def make_sample_digest() -> DailyDigest:
@@ -26,6 +26,15 @@ def make_sample_digest() -> DailyDigest:
         articles=[article],
         synthesis="Teams are standardizing around fewer model runtimes.",
         top_takeaways=["Infrastructure spend is moving toward inference."],
+        non_obvious_insight=NonObviousInsight(
+            insight="Smaller stacks are improving release cadence in larger teams.",
+            why_unintuitive=(
+                "Larger teams are usually expected to benefit from broader "
+                "platform breadth."
+            ),
+            confidence=4,
+            supporting_urls=["https://example.com/article"],
+        ),
     )
 
     return DailyDigest(
@@ -36,6 +45,17 @@ def make_sample_digest() -> DailyDigest:
         total_feeds=1,
         processing_time_seconds=1.2,
         overall_themes=["Inference efficiency"],
+        non_obvious_insights=[
+            NonObviousInsight(
+                insight="Procurement timing is shaping architecture earlier than expected.",
+                why_unintuitive=(
+                    "Architecture choices are typically expected to precede "
+                    "vendor commitments."
+                ),
+                confidence=5,
+                supporting_urls=["https://example.com/article"],
+            )
+        ],
     )
 
 
@@ -56,3 +76,16 @@ def test_render_html_uses_dark_theme_palette() -> None:
     assert "background-color: #332701" in html
     assert "color: #f8fafc" in html
     assert "color: #94a3b8" in html
+
+
+def test_render_outputs_non_obvious_insight_blocks() -> None:
+    renderer = EmailRenderer()
+    digest = make_sample_digest()
+
+    html = renderer.render_html(digest, "Digest Subject")
+    text = renderer.render_text(digest)
+
+    assert "Non-Obvious Insights" in html
+    assert "Non-Obvious Insight" in html
+    assert "NON-OBVIOUS INSIGHTS" in text
+    assert "NON-OBVIOUS INSIGHT:" in text

@@ -43,9 +43,6 @@ class TestSummarizer:
                 "summary": "Test summary",
                 "key_takeaways": ["insight1"],
                 "action_items": [],
-                "topics": ["AI"],
-                "sentiment": "neutral",
-                "importance": 3,
             },
             raw_text="{}",
             input_tokens=100,
@@ -97,12 +94,9 @@ class TestDigestBuilder:
         mock_client = Mock()
         mock_client.generate.return_value = LLMResponse(
             parsed={
-                "synthesis": "Category synthesis",
-                "top_takeaways": [],
-                "must_read": [],
                 "overall_themes": [],
-                "headline": "Headline",
                 "must_read_overall": [],
+                "cross_category_insights": [],
             },
             raw_text="{}",
             input_tokens=50,
@@ -116,6 +110,247 @@ class TestDigestBuilder:
         category_names = {category.name for category in digest.categories}
         assert "Technology" in category_names
         assert "Business" in category_names
+
+    def test_category_insight_included_when_gate_passes(self, sample_article: Article) -> None:
+        """Category insight should be included when confidence and sources pass gates."""
+        second_article = Article(
+            id="test222222222222",
+            url="https://example.com/test-2",
+            title="Second Article About AI",
+            author="Test Author Two",
+            feed_name="Test Feed",
+            feed_url="https://example.com/feed",
+            published=datetime.now(UTC),
+            content="More details on AI deployment patterns.",
+            word_count=120,
+            category="Technology",
+        )
+
+        mock_client = Mock()
+        mock_client.generate.side_effect = [
+            LLMResponse(
+                parsed={
+                    "synthesis": "Category synthesis",
+                    "top_takeaways": ["Inference efficiency is becoming strategic."],
+                    "non_obvious_insight": {
+                        "insight": "Smaller teams are shipping faster by narrowing model scope.",
+                        "why_unintuitive": (
+                            "The common assumption is that more model variety "
+                            "increases velocity."
+                        ),
+                        "confidence": 4,
+                        "supporting_urls": [str(sample_article.url)],
+                    },
+                },
+                raw_text="{}",
+                input_tokens=50,
+                output_tokens=25,
+            ),
+            LLMResponse(
+                parsed={
+                    "overall_themes": ["Inference efficiency"],
+                    "must_read_overall": [str(sample_article.url)],
+                    "cross_category_insights": [],
+                },
+                raw_text="{}",
+                input_tokens=40,
+                output_tokens=20,
+            ),
+        ]
+
+        builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
+        digest = builder.build_digest([sample_article, second_article])
+
+        assert len(digest.categories) == 1
+        insight = digest.categories[0].non_obvious_insight
+        assert insight is not None
+        assert insight.confidence == 4
+        assert str(sample_article.url) in insight.supporting_urls
+
+    def test_category_insight_dropped_when_confidence_low(self, sample_article: Article) -> None:
+        """Auto mode should drop low-confidence insights."""
+        second_article = Article(
+            id="test333333333333",
+            url="https://example.com/test-3",
+            title="Third Article About AI",
+            author="Test Author Three",
+            feed_name="Test Feed",
+            feed_url="https://example.com/feed",
+            published=datetime.now(UTC),
+            content="Another article for synthesis coverage.",
+            word_count=110,
+            category="Technology",
+        )
+
+        mock_client = Mock()
+        mock_client.generate.side_effect = [
+            LLMResponse(
+                parsed={
+                    "synthesis": "Category synthesis",
+                    "top_takeaways": ["The market is standardizing quickly."],
+                    "non_obvious_insight": {
+                        "insight": "Cross-team experimentation has slowed despite more tooling.",
+                        "why_unintuitive": (
+                            "Tooling growth is usually associated with faster "
+                            "experimentation."
+                        ),
+                        "confidence": 2,
+                        "supporting_urls": [str(sample_article.url)],
+                    },
+                },
+                raw_text="{}",
+                input_tokens=50,
+                output_tokens=25,
+            ),
+            LLMResponse(
+                parsed={
+                    "overall_themes": ["Standardization"],
+                    "must_read_overall": [str(sample_article.url)],
+                    "cross_category_insights": [],
+                },
+                raw_text="{}",
+                input_tokens=40,
+                output_tokens=20,
+            ),
+        ]
+
+        builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
+        digest = builder.build_digest([sample_article, second_article])
+
+        assert digest.categories[0].non_obvious_insight is None
+
+    def test_category_insight_dropped_when_source_url_missing(
+        self, sample_article: Article
+    ) -> None:
+        """Insights must reference URLs present in the category input."""
+        second_article = Article(
+            id="test444444444444",
+            url="https://example.com/test-4",
+            title="Fourth Article About AI",
+            author="Test Author Four",
+            feed_name="Test Feed",
+            feed_url="https://example.com/feed",
+            published=datetime.now(UTC),
+            content="Category synthesis source check content.",
+            word_count=105,
+            category="Technology",
+        )
+
+        mock_client = Mock()
+        mock_client.generate.side_effect = [
+            LLMResponse(
+                parsed={
+                    "synthesis": "Category synthesis",
+                    "top_takeaways": ["Model serving stacks are converging."],
+                    "non_obvious_insight": {
+                        "insight": "Teams are reducing complexity by owning less infrastructure.",
+                        "why_unintuitive": (
+                            "Engineering organizations often assume in-house ownership "
+                            "improves control."
+                        ),
+                        "confidence": 5,
+                        "supporting_urls": ["https://not-in-input.example.com/article"],
+                    },
+                },
+                raw_text="{}",
+                input_tokens=50,
+                output_tokens=25,
+            ),
+            LLMResponse(
+                parsed={
+                    "overall_themes": ["Convergence"],
+                    "must_read_overall": [str(sample_article.url)],
+                    "cross_category_insights": [],
+                },
+                raw_text="{}",
+                input_tokens=40,
+                output_tokens=20,
+            ),
+        ]
+
+        builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
+        digest = builder.build_digest([sample_article, second_article])
+
+        assert digest.categories[0].non_obvious_insight is None
+
+    def test_overall_insights_capped_and_must_read_filtered(self, sample_article: Article) -> None:
+        """Overall insights should respect caps and source URL filtering."""
+        business_article = Article(
+            id="test555555555555",
+            url="https://example.com/business",
+            title="Business Article",
+            author="Biz Author",
+            feed_name="Business Feed",
+            feed_url="https://example.com/business-feed",
+            published=datetime.now(UTC),
+            content="Business content.",
+            word_count=90,
+            category="Business",
+            summary="Margins are tightening.",
+            key_takeaways=["Cost discipline is increasing."],
+        )
+
+        tech_article = sample_article.model_copy(
+            update={
+                "summary": "Inference costs keep declining.",
+                "key_takeaways": ["Efficiency is becoming a default requirement."],
+            }
+        )
+
+        mock_client = Mock()
+        mock_client.generate.return_value = LLMResponse(
+            parsed={
+                "overall_themes": ["Efficiency focus"],
+                "must_read_overall": [
+                    str(sample_article.url),
+                    "https://not-in-input.example.com/ghost",
+                    str(business_article.url),
+                ],
+                "cross_category_insights": [
+                    {
+                        "insight": (
+                            "Cost pressure is driving model simplification across "
+                            "departments."
+                        ),
+                        "why_unintuitive": (
+                            "Product teams often treat model complexity as a sign "
+                            "of progress."
+                        ),
+                        "confidence": 5,
+                        "supporting_urls": [str(sample_article.url), str(business_article.url)],
+                    },
+                    {
+                        "insight": "Teams are standardizing faster than their roadmaps predict.",
+                        "why_unintuitive": (
+                            "Roadmaps usually over-index on experimentation velocity."
+                        ),
+                        "confidence": 5,
+                        "supporting_urls": [str(sample_article.url)],
+                    },
+                    {
+                        "insight": (
+                            "Procurement choices are setting architecture direction "
+                            "earlier."
+                        ),
+                        "why_unintuitive": (
+                            "Architecture decisions are often assumed to precede "
+                            "vendor decisions."
+                        ),
+                        "confidence": 5,
+                        "supporting_urls": [str(business_article.url)],
+                    },
+                ],
+            },
+            raw_text="{}",
+            input_tokens=60,
+            output_tokens=30,
+        )
+
+        builder = DigestBuilder(client=mock_client, max_insights_per_digest=2)
+        digest = builder.build_digest([tech_article, business_article])
+
+        assert len(digest.non_obvious_insights) == 2
+        assert digest.must_read == [str(sample_article.url), str(business_article.url)]
 
 
 class TestSummarizerCache:
@@ -159,9 +394,6 @@ class TestSummarizerCache:
                 "summary": "fresh summary",
                 "key_takeaways": ["new"],
                 "action_items": [],
-                "topics": ["AI"],
-                "sentiment": "neutral",
-                "importance": 3,
             },
             raw_text="{}",
             input_tokens=100,
@@ -191,9 +423,6 @@ class TestSummarizerCache:
                 "summary": "normal summary",
                 "key_takeaways": [],
                 "action_items": [],
-                "topics": [],
-                "sentiment": "neutral",
-                "importance": 3,
             },
             raw_text="{}",
             input_tokens=10,

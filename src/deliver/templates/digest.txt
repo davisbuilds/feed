@@ -9,6 +9,12 @@ TODAY'S THEMES
 {% for theme in digest.overall_themes %}• {{ theme }}
 {% endfor %}
 {% endif %}
+{% if digest.non_obvious_insights %}
+NON-OBVIOUS INSIGHTS
+{% for insight in digest.non_obvious_insights %}• {{ insight.insight }}
+  Why unintuitive: {{ insight.why_unintuitive }}
+{% endfor %}
+{% endif %}
 
 {% for category in digest.categories %}
 {{ '-' * 50 }}
@@ -23,6 +29,12 @@ TODAY'S THEMES
 KEY TAKEAWAYS:
 {% for takeaway in category.top_takeaways[:3] %}• {{ takeaway }}
 {% endfor %}
+
+{% endif %}
+{% if category.non_obvious_insight %}
+NON-OBVIOUS INSIGHT:
+• {{ category.non_obvious_insight.insight }}
+  Why unintuitive: {{ category.non_obvious_insight.why_unintuitive }}
 
 {% endif %}
 {% for article in category.articles %}

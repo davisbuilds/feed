@@ -348,6 +348,11 @@ def _print_digest_rich(digest: DailyDigest) -> None:
         console.print("\n[bold cyan]TODAY'S THEMES[/bold cyan]")
         for theme in digest.overall_themes:
             console.print(f"  • {theme}")
+    if digest.non_obvious_insights:
+        console.print("\n[bold cyan]NON-OBVIOUS INSIGHTS[/bold cyan]")
+        for insight in digest.non_obvious_insights:
+            console.print(f"  • {insight.insight}")
+            console.print(f"    [dim]Why unintuitive: {insight.why_unintuitive}[/dim]")
 
     # Categories
     for category in digest.categories:
@@ -368,6 +373,13 @@ def _print_digest_rich(digest: DailyDigest) -> None:
             console.print("\n[bold]KEY TAKEAWAYS:[/bold]")
             for takeaway in category.top_takeaways[:3]:
                 console.print(f"  • {takeaway}")
+        if category.non_obvious_insight:
+            console.print("\n[bold]NON-OBVIOUS INSIGHT:[/bold]")
+            console.print(f"  • {category.non_obvious_insight.insight}")
+            console.print(
+                "    [dim]Why unintuitive: "
+                f"{category.non_obvious_insight.why_unintuitive}[/dim]"
+            )
 
         # Articles table
         if category.articles:

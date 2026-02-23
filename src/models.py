@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class ArticleStatus(str, Enum):
     """Processing status for an article."""
-    
+
     PENDING = "pending"
     PROCESSING = "processing"
     SUMMARIZED = "summarized"
@@ -34,11 +34,23 @@ class Article(BaseModel):
     word_count: int = Field(default=0, description="Word count of content")
     category: str = Field(default="Uncategorized", description="Content category")
     status: ArticleStatus = Field(default=ArticleStatus.PENDING, description="Processing status")
-    
+
     # Populated after analysis
     summary: str | None = Field(default=None, description="LLM-generated summary")
     key_takeaways: list[str] = Field(default_factory=list, description="Key insights")
     action_items: list[str] = Field(default_factory=list, description="Actionable items")
+
+
+class NonObviousInsight(BaseModel):
+    """A counterintuitive but evidence-backed insight."""
+
+    insight: str = Field(..., description="One-sentence non-obvious finding")
+    why_unintuitive: str = Field(..., description="Why this conclusion is non-intuitive")
+    confidence: int = Field(..., ge=1, le=5, description="Confidence in this finding")
+    supporting_urls: list[str] = Field(
+        default_factory=list,
+        description="Source URLs supporting this finding",
+    )
 
 
 class CategoryDigest(BaseModel):
@@ -48,7 +60,14 @@ class CategoryDigest(BaseModel):
     article_count: int = Field(..., description="Number of articles in category")
     articles: list[Article] = Field(default_factory=list, description="Articles in category")
     synthesis: str = Field(default="", description="Cross-article synthesis")
-    top_takeaways: list[str] = Field(default_factory=list, description="Top insights across articles")
+    top_takeaways: list[str] = Field(
+        default_factory=list,
+        description="Top insights across articles",
+    )
+    non_obvious_insight: NonObviousInsight | None = Field(
+        default=None,
+        description="Optional non-obvious insight for this category",
+    )
 
 
 class DailyDigest(BaseModel):
@@ -56,14 +75,21 @@ class DailyDigest(BaseModel):
 
     id: str = Field(..., description="Unique digest identifier")
     date: datetime = Field(..., description="Digest date")
-    categories: list[CategoryDigest] = Field(default_factory=list, description="Categorized content")
+    categories: list[CategoryDigest] = Field(
+        default_factory=list,
+        description="Categorized content",
+    )
     total_articles: int = Field(default=0, description="Total articles processed")
     total_feeds: int = Field(default=0, description="Total feeds checked")
     processing_time_seconds: float = Field(default=0.0, description="Time to generate digest")
-    
+
     # Meta insights
     overall_themes: list[str] = Field(default_factory=list, description="Cross-category themes")
     must_read: list[str] = Field(default_factory=list, description="URLs of must-read articles")
+    non_obvious_insights: list[NonObviousInsight] = Field(
+        default_factory=list,
+        description="Optional cross-category non-obvious insights",
+    )
 
 
 class DigestStats(BaseModel):

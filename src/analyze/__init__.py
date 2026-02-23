@@ -90,7 +90,12 @@ def run_analysis(
         max_retries=settings.llm_retries,
     )
     summarizer = Summarizer(client=llm_client)
-    digest_builder = DigestBuilder(client=llm_client)
+    digest_builder = DigestBuilder(
+        client=llm_client,
+        insights_mode=settings.insights_mode,
+        insight_min_confidence=settings.insight_min_confidence,
+        max_insights_per_digest=settings.max_insights_per_digest,
+    )
 
     summarized_articles: list[Article] = []
 

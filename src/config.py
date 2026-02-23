@@ -57,6 +57,22 @@ class Settings(BaseSettings):
     max_articles_per_feed: int = Field(default=10, description="Max articles to fetch per feed")
     lookback_hours: int = Field(default=24, description="Hours to look back for new articles")
     max_tokens_per_summary: int = Field(default=500, description="Max tokens per article summary")
+    insights_mode: Literal["off", "auto", "always"] = Field(
+        default="auto",
+        description="How non-obvious insights are included in digest output",
+    )
+    insight_min_confidence: int = Field(
+        default=4,
+        ge=1,
+        le=5,
+        description="Minimum confidence for insight inclusion in auto mode",
+    )
+    max_insights_per_digest: int = Field(
+        default=2,
+        ge=1,
+        le=5,
+        description="Max number of cross-category insights in a digest",
+    )
 
     # Retry & cache
     llm_retries: int = Field(default=2, ge=0, le=5, description="Max LLM retry attempts")

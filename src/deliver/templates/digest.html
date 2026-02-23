@@ -29,6 +29,15 @@
                 </p>
             </div>
             {% endif %}
+            {% if digest.non_obvious_insights %}
+            <div style="background-color: #0f172a; border: 1px solid #334155; padding: 14px 16px; margin-bottom: 24px; border-radius: 6px;">
+                <p style="font-size: 12px; font-weight: 600; color: #93c5fd; text-transform: uppercase; margin-bottom: 10px;">Non-Obvious Insights</p>
+                {% for insight in digest.non_obvious_insights %}
+                <p style="font-size: 14px; color: #dbeafe; margin-bottom: 6px;">{{ insight.insight }}</p>
+                <p style="font-size: 13px; color: #bfdbfe; margin-bottom: 10px;">Why unintuitive: {{ insight.why_unintuitive }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
             
             <!-- Categories -->
             {% for category in digest.categories %}
@@ -54,6 +63,13 @@
                         <li style="font-size: 14px; color: #fde68a; margin-bottom: 4px;">{{ takeaway }}</li>
                         {% endfor %}
                     </ul>
+                </div>
+                {% endif %}
+                {% if category.non_obvious_insight %}
+                <div style="background-color: #082f49; border-left: 3px solid #38bdf8; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
+                    <p style="font-size: 12px; font-weight: 600; color: #7dd3fc; text-transform: uppercase; margin-bottom: 8px;">Non-Obvious Insight</p>
+                    <p style="font-size: 14px; color: #e0f2fe; margin-bottom: 4px;">{{ category.non_obvious_insight.insight }}</p>
+                    <p style="font-size: 13px; color: #bae6fd; margin-bottom: 0;">Why unintuitive: {{ category.non_obvious_insight.why_unintuitive }}</p>
                 </div>
                 {% endif %}
                 

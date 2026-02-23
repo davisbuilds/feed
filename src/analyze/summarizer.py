@@ -27,9 +27,6 @@ class ArticleSummaryResponse(BaseModel):
     summary: str = Field(..., description="2-3 sentence summary")
     key_takeaways: list[str] = Field(description="Up to 5 key insights")
     action_items: list[str] = Field(description="Up to 3 actionable items")
-    topics: list[str] = Field(description="Up to 5 topics")
-    sentiment: str = Field(description="positive, negative, neutral, or mixed")
-    importance: int = Field(description="1-5 scale of importance")
 
 
 class SummaryResult(TypedDict):
