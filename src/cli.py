@@ -426,7 +426,8 @@ def run(
 
     console.print(Panel.fit(
         "[bold]📬 Feed CLI[/bold]\n"
-        f"Running full pipeline at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Running full pipeline at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"Model: {settings.llm_provider}/{settings.llm_model}",
         border_style="blue",
     ))
 

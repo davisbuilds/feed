@@ -2,7 +2,7 @@
 
 import re
 from collections import defaultdict
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Literal
 from uuid import uuid4
 
@@ -109,7 +109,7 @@ class DigestBuilder:
 
         digest = DailyDigest(
             id=str(uuid4())[:8],
-            date=datetime.now(UTC),
+            date=datetime.now(),
             categories=category_digests,
             total_articles=len(articles),
             total_feeds=len({article.feed_url for article in articles}),
