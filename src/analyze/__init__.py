@@ -1,7 +1,9 @@
 """Analysis module - LLM-powered intelligence layer."""
 
+from __future__ import annotations
+
 from datetime import UTC, datetime, timedelta
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from src.config import get_settings
 from src.llm import create_client
@@ -11,6 +13,9 @@ from src.storage.db import Database
 
 from .digest_builder import DigestBuilder
 from .summarizer import Summarizer
+
+if TYPE_CHECKING:
+    from src.storage.cache import CacheStore
 
 logger = get_logger("analyze")
 
@@ -22,17 +27,16 @@ class AnalysisResult(NamedTuple):
 
     digest: DailyDigest | None
     articles_analyzed: int
-    tokens_used: int
-    cost_estimate_usd: float
+    input_tokens: int
+    output_tokens: int
+    cost_estimate_usd: float | None
     duration_seconds: float
     errors: list[str]
 
-
-COST_PER_1K_TOKENS: dict[str, dict[str, float]] = {
-    "gemini": {"input": 0.000075, "output": 0.00030},
-    "openai": {"input": 0.000150, "output": 0.00060},
-    "anthropic": {"input": 0.003000, "output": 0.01500},
-}
+    @property
+    def tokens_used(self) -> int:
+        """Total tokens (backward compat for CLI display)."""
+        return self.input_tokens + self.output_tokens
 
 
 def run_analysis(
@@ -43,6 +47,8 @@ def run_analysis(
     """Run the full analysis pipeline."""
     import time
 
+    from src import pricing
+
     start_time = time.time()
 
     settings = get_settings()
@@ -52,13 +58,14 @@ def run_analysis(
     model = settings.llm_model
 
     errors: list[str] = []
-    total_tokens = 0
+    total_in = 0
+    total_out = 0
 
     if db is None:
         db = Database(settings.data_dir / "articles.db")
 
     # Set up cache unless disabled
-    cache = None
+    cache: CacheStore | None = None
     if not no_cache:
         from src.storage.cache import CacheStore
 
@@ -75,7 +82,8 @@ def run_analysis(
         return AnalysisResult(
             digest=None,
             articles_analyzed=0,
-            tokens_used=0,
+            input_tokens=0,
+            output_tokens=0,
             cost_estimate_usd=0.0,
             duration_seconds=time.time() - start_time,
             errors=[],
@@ -110,7 +118,8 @@ def run_analysis(
     )
 
     for article, result in zip(articles, summary_results, strict=False):
-        total_tokens += result["tokens_used"]
+        total_in += result["input_tokens"]
+        total_out += result["output_tokens"]
 
         if result["success"]:
             article.summary = result["summary"]
@@ -135,39 +144,33 @@ def run_analysis(
         return AnalysisResult(
             digest=None,
             articles_analyzed=0,
-            tokens_used=total_tokens,
-            cost_estimate_usd=_estimate_cost(total_tokens, provider),
+            input_tokens=total_in,
+            output_tokens=total_out,
+            cost_estimate_usd=pricing.estimate_cost(model, total_in, total_out),
             duration_seconds=time.time() - start_time,
             errors=errors,
         )
 
     logger.info("Building digest...")
-    digest = digest_builder.build_digest(summarized_articles)
+    digest, digest_in, digest_out = digest_builder.build_digest(summarized_articles)
 
-    synthesis_tokens = 2000 * len(digest.categories)
-    total_tokens += synthesis_tokens
+    total_in += digest_in
+    total_out += digest_out
 
     duration = time.time() - start_time
     digest.processing_time_seconds = duration
 
     logger.info(
         f"Analysis complete: {len(summarized_articles)} articles, "
-        f"{total_tokens} tokens, {duration:.1f}s"
+        f"{total_in + total_out} tokens, {duration:.1f}s"
     )
 
     return AnalysisResult(
         digest=digest,
         articles_analyzed=len(summarized_articles),
-        tokens_used=total_tokens,
-        cost_estimate_usd=_estimate_cost(total_tokens, provider),
+        input_tokens=total_in,
+        output_tokens=total_out,
+        cost_estimate_usd=pricing.estimate_cost(model, total_in, total_out),
         duration_seconds=duration,
         errors=errors,
     )
-
-
-def _estimate_cost(tokens: int, provider: str = "gemini") -> float:
-    """Estimate API cost (rough, assumes 70/30 input/output token split)."""
-    pricing = COST_PER_1K_TOKENS.get(provider, COST_PER_1K_TOKENS["gemini"])
-    input_tokens = tokens * 0.7
-    output_tokens = tokens * 0.3
-    return ((input_tokens / 1000) * pricing["input"]) + ((output_tokens / 1000) * pricing["output"])

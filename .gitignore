@@ -17,6 +17,7 @@ build/
 
 # Data
 data/
+!src/pricing/data/
 *.db
 *.sqlite
 

@@ -37,7 +37,8 @@ class SummaryResult(TypedDict):
     summary: str | None
     key_takeaways: list[str]
     action_items: list[str]
-    tokens_used: int
+    input_tokens: int
+    output_tokens: int
     error: str | None
 
 
@@ -99,16 +100,17 @@ class Summarizer:
                 response_schema=ArticleSummaryResponse,
             )
             parsed = response.parsed
-            tokens_used = response.input_tokens + response.output_tokens
+            total = response.input_tokens + response.output_tokens
 
-            logger.debug(f"Summary generated ({tokens_used} tokens)")
+            logger.debug(f"Summary generated ({total} tokens)")
             result = SummaryResult(
                 success=True,
                 article_id=article.id,
                 summary=parsed.get("summary"),
                 key_takeaways=parsed.get("key_takeaways", []),
                 action_items=parsed.get("action_items", []),
-                tokens_used=tokens_used,
+                input_tokens=response.input_tokens,
+                output_tokens=response.output_tokens,
                 error=None,
             )
 
@@ -130,7 +132,8 @@ class Summarizer:
                 summary=None,
                 key_takeaways=[],
                 action_items=[],
-                tokens_used=0,
+                input_tokens=0,
+                output_tokens=0,
                 error=str(exc),
             )
 
@@ -170,7 +173,8 @@ class Summarizer:
                             summary=None,
                             key_takeaways=[],
                             action_items=[],
-                            tokens_used=0,
+                            input_tokens=0,
+                            output_tokens=0,
                             error=str(exc),
                         )
                     )
@@ -187,7 +191,8 @@ class Summarizer:
                         summary=None,
                         key_takeaways=[],
                         action_items=[],
-                        tokens_used=0,
+                        input_tokens=0,
+                        output_tokens=0,
                         error="Missing summary result",
                     ),
                 )

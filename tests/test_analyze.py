@@ -55,7 +55,8 @@ class TestSummarizer:
         assert result["success"] is True
         assert result["summary"] == "Test summary"
         assert result["key_takeaways"] == ["insight1"]
-        assert result["tokens_used"] == 150
+        assert result["input_tokens"] == 100
+        assert result["output_tokens"] == 50
 
     def test_summarize_article_handles_api_error(self, sample_article: Article) -> None:
         """Test handling of API errors."""
@@ -104,12 +105,14 @@ class TestDigestBuilder:
         )
 
         builder = DigestBuilder(client=mock_client)
-        digest = builder.build_digest(articles)
+        digest, in_tok, out_tok = builder.build_digest(articles)
 
         assert len(digest.categories) == 2
         category_names = {category.name for category in digest.categories}
         assert "Technology" in category_names
         assert "Business" in category_names
+        assert in_tok == 50
+        assert out_tok == 25
 
     def test_category_insight_included_when_gate_passes(self, sample_article: Article) -> None:
         """Category insight should be included when confidence and sources pass gates."""
@@ -159,7 +162,7 @@ class TestDigestBuilder:
         ]
 
         builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
-        digest = builder.build_digest([sample_article, second_article])
+        digest, _, _ = builder.build_digest([sample_article, second_article])
 
         assert len(digest.categories) == 1
         insight = digest.categories[0].non_obvious_insight
@@ -215,7 +218,7 @@ class TestDigestBuilder:
         ]
 
         builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
-        digest = builder.build_digest([sample_article, second_article])
+        digest, _, _ = builder.build_digest([sample_article, second_article])
 
         assert digest.categories[0].non_obvious_insight is None
 
@@ -269,7 +272,7 @@ class TestDigestBuilder:
         ]
 
         builder = DigestBuilder(client=mock_client, insights_mode="auto", insight_min_confidence=4)
-        digest = builder.build_digest([sample_article, second_article])
+        digest, _, _ = builder.build_digest([sample_article, second_article])
 
         assert digest.categories[0].non_obvious_insight is None
 
@@ -347,7 +350,7 @@ class TestDigestBuilder:
         )
 
         builder = DigestBuilder(client=mock_client, max_insights_per_digest=2)
-        digest = builder.build_digest([tech_article, business_article])
+        digest, _, _ = builder.build_digest([tech_article, business_article])
 
         assert len(digest.non_obvious_insights) == 2
         assert digest.must_read == [str(sample_article.url), str(business_article.url)]
@@ -372,7 +375,8 @@ class TestSummarizerCache:
             "summary": "cached summary",
             "key_takeaways": ["cached insight"],
             "action_items": [],
-            "tokens_used": 100,
+            "input_tokens": 70,
+            "output_tokens": 30,
             "error": None,
         }
         cache.set("summary", key, cached_data)

@@ -89,9 +89,17 @@ class DigestBuilder:
         self.insight_min_confidence = insight_min_confidence
         self.max_insights_per_digest = max_insights_per_digest
 
-    def build_digest(self, articles: list[Article]) -> DailyDigest:
-        """Build a complete daily digest from articles."""
+    def build_digest(
+        self, articles: list[Article]
+    ) -> tuple[DailyDigest, int, int]:
+        """Build a complete daily digest from articles.
+
+        Returns (digest, input_tokens, output_tokens).
+        """
         logger.info(f"Building digest from {len(articles)} articles")
+
+        total_in = 0
+        total_out = 0
 
         by_category: dict[str, list[Article]] = defaultdict(list)
         for article in articles:
@@ -100,12 +108,18 @@ class DigestBuilder:
         category_digests: list[CategoryDigest] = []
         for category_name, category_articles in sorted(by_category.items()):
             logger.info(f"Processing category: {category_name} ({len(category_articles)} articles)")
-            category_digest = self._build_category_digest(category_name, category_articles)
+            category_digest, c_in, c_out = self._build_category_digest(
+                category_name, category_articles
+            )
             category_digests.append(category_digest)
+            total_in += c_in
+            total_out += c_out
 
-        overall_themes, must_read, non_obvious_insights = self._synthesize_overall(
-            category_digests
+        overall_themes, must_read, non_obvious_insights, o_in, o_out = (
+            self._synthesize_overall(category_digests)
         )
+        total_in += o_in
+        total_out += o_out
 
         digest = DailyDigest(
             id=str(uuid4())[:8],
@@ -121,14 +135,17 @@ class DigestBuilder:
         logger.info(
             f"Digest built: {digest.total_articles} articles, {len(digest.categories)} categories"
         )
-        return digest
+        return digest, total_in, total_out
 
     def _build_category_digest(
         self,
         category_name: str,
         articles: list[Article],
-    ) -> CategoryDigest:
-        """Build digest for a single category."""
+    ) -> tuple[CategoryDigest, int, int]:
+        """Build digest for a single category.
+
+        Returns (digest, input_tokens, output_tokens).
+        """
         summaries_text = "\n\n".join(
             [
                 f"**{article.title}** ({article.feed_name})\n"
@@ -144,6 +161,8 @@ class DigestBuilder:
         top_takeaways: list[str] = []
         non_obvious_insight: NonObviousInsight | None = None
         allowed_urls = {self._normalize_url(str(article.url)) for article in articles}
+        in_tokens = 0
+        out_tokens = 0
 
         if len(articles) > 1:
             try:
@@ -155,6 +174,8 @@ class DigestBuilder:
                     system=DIGEST_SYNTHESIS_SYSTEM,
                     response_schema=CategorySynthesisResponse,
                 )
+                in_tokens = response.input_tokens
+                out_tokens = response.output_tokens
                 parsed = CategorySynthesisResponse.model_validate(response.parsed)
                 synthesis = parsed.synthesis
                 top_takeaways = parsed.top_takeaways
@@ -174,22 +195,29 @@ class DigestBuilder:
             synthesis = article.summary or f"One article from {article.feed_name}."
             top_takeaways = article.key_takeaways[:3]
 
-        return CategoryDigest(
-            name=category_name,
-            article_count=len(articles),
-            articles=articles,
-            synthesis=synthesis,
-            top_takeaways=top_takeaways,
-            non_obvious_insight=non_obvious_insight,
+        return (
+            CategoryDigest(
+                name=category_name,
+                article_count=len(articles),
+                articles=articles,
+                synthesis=synthesis,
+                top_takeaways=top_takeaways,
+                non_obvious_insight=non_obvious_insight,
+            ),
+            in_tokens,
+            out_tokens,
         )
 
     def _synthesize_overall(
         self,
         category_digests: list[CategoryDigest],
-    ) -> tuple[list[str], list[str], list[NonObviousInsight]]:
-        """Generate overall themes across all categories."""
+    ) -> tuple[list[str], list[str], list[NonObviousInsight], int, int]:
+        """Generate overall themes across all categories.
+
+        Returns (themes, must_read, insights, input_tokens, output_tokens).
+        """
         if not category_digests:
-            return [], [], []
+            return [], [], [], 0, 0
 
         summaries_text = "\n\n".join(
             [
@@ -222,10 +250,12 @@ class DigestBuilder:
                     existing_texts=parsed.overall_themes,
                     max_count=self.max_insights_per_digest,
                 ),
+                response.input_tokens,
+                response.output_tokens,
             )
         except Exception as exc:
             logger.warning(f"Overall synthesis failed: {exc}")
-            return [], [], []
+            return [], [], [], 0, 0
 
     def _approve_insight(
         self,

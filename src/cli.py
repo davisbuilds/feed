@@ -477,9 +477,10 @@ def run(
             progress.remove_task(task)
 
         console.print(f"  ✓ Analyzed {analysis_result.articles_analyzed} articles")
+        cost = analysis_result.cost_estimate_usd
+        cost_str = f"${cost:.4f}" if cost is not None else "$?.????"
         console.print(
-            f"  ✓ Used {analysis_result.tokens_used:,} tokens "
-            f"(${analysis_result.cost_estimate_usd:.4f})"
+            f"  ✓ Used {analysis_result.tokens_used:,} tokens ({cost_str})"
         )
 
     # Phase 3: Output or Send
@@ -741,9 +742,11 @@ def analyze(
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
 
+    cost = result.cost_estimate_usd
+    cost_str = f"${cost:.4f}" if cost is not None else "$?.????"
     table.add_row("Articles analyzed", str(result.articles_analyzed))
     table.add_row("Tokens used", f"{result.tokens_used:,}")
-    table.add_row("Estimated cost", f"${result.cost_estimate_usd:.4f}")
+    table.add_row("Estimated cost", cost_str)
     table.add_row("Duration", f"{result.duration_seconds:.1f}s")
 
     console.print(table)
