@@ -144,7 +144,7 @@ Run the full daily workflow (Ingest → Analyze → display digest):
 ./feed schedule --backend cron --install
 ```
 
-Run `feed --help` or `feed <command> --help` for the full list of options per command. See [docs/FEATURES.md](docs/FEATURES.md) for a detailed CLI and options reference.
+Run `feed --help` or `feed <command> --help` for the full list of options per command. See [docs/system/FEATURES.md](docs/system/FEATURES.md) for a detailed CLI and options reference.
 
 ## Project Structure
 
@@ -169,12 +169,12 @@ feed/
 
 - Contributor workflow and PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Agent implementation guidance: [AGENTS.md](AGENTS.md)
-- Architecture and code organization: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Feature and CLI reference: [docs/FEATURES.md](docs/FEATURES.md)
-- Runtime operations (env, CI, scripts): [docs/OPERATIONS.md](docs/OPERATIONS.md)
-- Product roadmap snapshot: [docs/ROADMAP.md](docs/ROADMAP.md)
+- Architecture and code organization: [docs/system/ARCHITECTURE.md](docs/system/ARCHITECTURE.md)
+- Feature and CLI reference: [docs/system/FEATURES.md](docs/system/FEATURES.md)
+- Runtime operations (env, CI, scripts): [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
+- Product roadmap snapshot: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
 - Testing strategy: [docs/plans/TEST_PLAN.md](docs/plans/TEST_PLAN.md)
-- Git history and branch policy: [docs/GIT_HISTORY_POLICY.md](docs/GIT_HISTORY_POLICY.md)
+- Git history and branch policy: [docs/project/GIT_HISTORY_POLICY.md](docs/project/GIT_HISTORY_POLICY.md)
 
 ## Development
 

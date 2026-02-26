@@ -88,5 +88,5 @@ Ruff is configured with strict rules. Watch for these common issues:
 
 ## CLI Overview
 
-Commands: `init`, `run`, `schedule`, `ingest`, `test`, `analyze`, `send`, `status`, `config`, `cache`. Run `feed --help` or `feed <command> --help` for options. See `docs/FEATURES.md` for a detailed reference.
+Commands: `init`, `run`, `schedule`, `ingest`, `test`, `analyze`, `send`, `status`, `config`, `cache`. Run `feed --help` or `feed <command> --help` for options. See `docs/system/FEATURES.md` for a detailed reference.
 
