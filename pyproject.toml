@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "feed"
 version = "0.3.0"
 description = "Your newsletter digest CLI"
+authors = [{name = "davisbuilds"}]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
