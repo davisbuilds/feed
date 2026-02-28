@@ -90,3 +90,6 @@ Ruff is configured with strict rules. Watch for these common issues:
 
 Commands: `init`, `run`, `schedule`, `ingest`, `test`, `analyze`, `send`, `status`, `config`, `cache`. Run `feed --help` or `feed <command> --help` for options. See `docs/system/FEATURES.md` for a detailed reference.
 
+Notable flags:
+- `--copy` on `run` and `analyze`: copies digest as markdown to the system clipboard (uses `pbcopy` on macOS, `xclip`/`xsel` on Linux). Works independently of `--send` and `--format`.
+

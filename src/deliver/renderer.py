@@ -55,6 +55,11 @@ class EmailRenderer:
         template = self.env.get_template("digest.txt")
         return template.render(digest=digest)
 
+    def render_markdown(self, digest: DailyDigest) -> str:
+        """Render digest to markdown."""
+        template = self.env.get_template("digest.md")
+        return template.render(digest=digest)
+
     def render(self, digest: DailyDigest, subject: str | None = None) -> tuple[str, str]:
         """
         Render digest to both HTML and plain text.

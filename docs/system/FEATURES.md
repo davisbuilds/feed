@@ -23,6 +23,7 @@ Product-surface reference for Feed.
 - Terminal output: Rich (default), plain text, or JSON format.
 - Email delivery via Resend API with Jinja2 HTML + plain text templates.
 - `--send` flag on `run` command for email delivery.
+- `--copy` flag on `run` and `analyze` copies digest as markdown to clipboard (works alongside `--send`).
 - Test email mode via `feed send --test`.
 
 ## Scheduling
@@ -44,10 +45,10 @@ Product-surface reference for Feed.
 | Command | Key Flags | Purpose |
 |---------|-----------|---------|
 | `init` | `--force` | Interactive setup wizard |
-| `run` | `--send`, `--format`, `--no-cache` | Full pipeline: ingest → analyze → output |
+| `run` | `--send`, `--copy`, `--format`, `--no-cache` | Full pipeline: ingest → analyze → output |
 | `schedule` | `--backend`, `--frequency`, `--time`, `--install`, `--status` | Recurring job management |
 | `ingest` | | Fetch new articles |
-| `analyze` | `--format`, `--no-cache` | Summarize pending articles |
+| `analyze` | `--copy`, `--format`, `--no-cache` | Summarize pending articles |
 | `send` | `--test`, `--format` | Email digest delivery |
 | `test` | `--url`, `--name`, `--all`, `--strict` | Feed URL validation |
 | `status` | `--json` | Pipeline statistics |

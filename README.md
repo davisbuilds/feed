@@ -10,7 +10,7 @@ Current CLI version: `v0.3.0`.
 - **AI-Powered Analysis**: Summarizes articles, extracts key takeaways, and synthesizes trends.
 - **Multi-Provider LLM**: Supports Google Gemini (default), OpenAI, and Anthropic.
 - **Smart Categorization**: Groups updates by category (e.g., Tech, AI, Business) for easier reading.
-- **Terminal-First Output**: Rich, plain text, or JSON output to the terminal; email delivery via `--send`.
+- **Terminal-First Output**: Rich, plain text, or JSON output to the terminal; email delivery via `--send`; clipboard copy via `--copy`.
 - **Local First**: Stores all data in a local SQLite database for privacy and speed.
 - **XDG Config**: Global config at `~/.config/feed/` so you can run `feed` from any directory.
 - **Feed Diagnostics**: `feed test` validates URL reachability, parser health, redirects, and entry counts.
@@ -117,10 +117,10 @@ The CLI is called `feed`. Run it via the `./feed` wrapper script (or `uv run fee
 ### Quick Reference
 
 ```text
-run      [--send] [--format rich|text|json] [--no-cache]
+run      [--send] [--copy] [--format rich|text|json] [--no-cache]
 schedule [--status] [--backend auto|cron|launchd] [--frequency daily|weekly] [--time HH:MM] [--install]
 ingest
-analyze  [--format rich|text|json] [--no-cache]
+analyze  [--copy] [--format rich|text|json] [--no-cache]
 send     [--test] [--format rich|text|json]
 test     [--url URL | --name NAME | --all] [--strict] [--timeout N] [--lookback-hours N] [--max-articles N]
 status   [--json]
@@ -135,9 +135,11 @@ Run the full daily workflow (Ingest → Analyze → display digest):
 
 ```bash
 ./feed run                     # Rich terminal output (default)
+./feed run --copy              # Also copy digest as markdown to clipboard
 ./feed run --format text       # Plain text output
 ./feed run --format json       # JSON output
 ./feed run --send              # Send digest via email instead
+./feed run --copy --send       # Send email AND copy to clipboard
 ./feed schedule                # Preview default schedule (Fri 17:00)
 ./feed schedule --status       # Inspect installed schedule status
 ./feed schedule --install      # Install schedule (auto backend)

@@ -5,6 +5,7 @@ Usage:
     ./feed run                    # Full pipeline, output to terminal (rich)
     ./feed run --format text      # Full pipeline, output as plain text
     ./feed run --format json      # Full pipeline, output as JSON
+    ./feed run --copy             # Full pipeline, copy markdown to clipboard
     ./feed run --send             # Full pipeline, send email instead
     ./feed schedule               # Print default scheduler config (Fri 17:00)
     ./feed schedule --status      # Show installed scheduler status
@@ -19,6 +20,7 @@ Usage:
 """
 
 import json
+import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
@@ -126,14 +128,14 @@ def version_callback(value: bool):
 
 
 _QUICK_REF_ITEMS = [
-    ("run", "[--send] [--format rich|text|json] [--no-cache]"),
+    ("run", "[--send] [--copy] [--format rich|text|json] [--no-cache]"),
     (
         "schedule",
         "[--status] [--backend auto|cron|launchd] "
         "[--frequency daily|weekly] [--install]",
     ),
     ("ingest", ""),
-    ("analyze", "[--format rich|text|json] [--no-cache]"),
+    ("analyze", "[--copy] [--format rich|text|json] [--no-cache]"),
     ("send", "[--test] [--format rich|text|json]"),
     ("test", "[--url URL | --name NAME | --all] [--strict] [--timeout N]"),
     ("status", "[--json]"),
@@ -322,6 +324,35 @@ EMAIL_TO={email_to}
     ))
 
 
+def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
+    """Render digest as markdown and copy to system clipboard. Returns True on success."""
+    from src.deliver.renderer import EmailRenderer
+
+    renderer = EmailRenderer()
+    markdown = renderer.render_markdown(digest)
+
+    pbcopy = shutil.which("pbcopy")
+    if pbcopy:
+        proc = subprocess.run(  # noqa: S603
+            [pbcopy], input=markdown.encode(), check=False,
+        )
+        return proc.returncode == 0
+
+    # Fallback for Linux
+    for cmd in ("xclip", "xsel"):
+        path = shutil.which(cmd)
+        if path:
+            args = (
+                [path, "-selection", "clipboard"]
+                if cmd == "xclip"
+                else [path, "--clipboard", "--input"]
+            )
+            proc = subprocess.run(args, input=markdown.encode(), check=False)  # noqa: S603
+            return proc.returncode == 0
+
+    return False
+
+
 def _print_digest(digest: DailyDigest, output_format: str) -> None:
     """Print digest to terminal in specified format."""
     if output_format == "json":
@@ -420,6 +451,7 @@ def run(
     send: bool = typer.Option(False, "--send", help="Send email instead of terminal output"),
     output_format: str = FormatChoice,
     no_cache: bool = typer.Option(False, "--no-cache", help="Skip cache, re-summarize all"),
+    copy: bool = typer.Option(False, "--copy", help="Copy digest as markdown to clipboard"),
 ) -> None:
     """Run the full digest pipeline: ingest → analyze → send."""
     settings = _load_settings()
@@ -503,6 +535,16 @@ def run(
             _print_digest(analysis_result.digest, output_format)
     else:
         console.print("\n[dim]No digest to output[/dim]")
+
+    # Copy to clipboard (independent of send/output)
+    if copy and analysis_result and analysis_result.digest:
+        if _copy_digest_to_clipboard(analysis_result.digest):
+            console.print("\n  [green]✓[/green] Copied digest to clipboard (markdown)")
+        else:
+            console.print(
+                "\n  [yellow]⚠ Could not copy to clipboard"
+                " (no clipboard tool found)[/yellow]"
+            )
 
     # Summary
     total_time = ingest_result.duration_seconds
@@ -721,6 +763,7 @@ def analyze(
         help="Show digest after analysis (rich, text, or json)",
     ),
     no_cache: bool = typer.Option(False, "--no-cache", help="Skip cache, re-summarize all"),
+    copy: bool = typer.Option(False, "--copy", help="Copy digest as markdown to clipboard"),
 ) -> None:
     """Summarize pending articles with the configured LLM."""
     settings = _load_settings()
@@ -758,6 +801,14 @@ def analyze(
         if output_format:
             console.print()
             _print_digest(result.digest, output_format)
+        if copy:
+            if _copy_digest_to_clipboard(result.digest):
+                console.print("\n[green]✓[/green] Copied digest to clipboard (markdown)")
+            else:
+                console.print(
+                    "\n[yellow]⚠ Could not copy to clipboard"
+                    " (no clipboard tool found)[/yellow]"
+                )
 
 
 @app.command()
