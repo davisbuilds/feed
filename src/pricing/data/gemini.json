@@ -1,7 +1,31 @@
 {
   "provider": "google",
-  "lastUpdated": "2026-02-19T00:00:00Z",
+  "lastUpdated": "2026-03-04T00:00:00Z",
   "models": {
+    "gemini-3.1-pro-preview": {
+      "aliases": ["gemini-3.1-pro-preview-customtools"],
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 12,
+      "deprecated": false
+    },
+    "gemini-3.1-flash-lite-preview": {
+      "aliases": [],
+      "inputCostPerMTok": 0.25,
+      "outputCostPerMTok": 1.5,
+      "deprecated": false
+    },
+    "gemini-3-flash-preview": {
+      "aliases": [],
+      "inputCostPerMTok": 0.5,
+      "outputCostPerMTok": 3,
+      "deprecated": false
+    },
+    "gemini-3-pro-preview": {
+      "aliases": [],
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 12,
+      "deprecated": true
+    },
     "gemini-2.5-pro": {
       "aliases": ["gemini-2.5-pro-preview-05-06"],
       "inputCostPerMTok": 1.25,
