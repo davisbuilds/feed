@@ -1,31 +1,38 @@
 # Git History and Branch Hygiene
 
-Last updated: February 22, 2026
+Last updated: May 11, 2026
 
 ## Repository Merge Settings
 
 Configured on GitHub repository `davisbuilds/feed`:
 
-- `allow_squash_merge`: `true`
-- `allow_merge_commit`: `false`
-- `allow_rebase_merge`: `false`
+- `allow_squash_merge`: `false`
+- `allow_merge_commit`: `true`
+- `allow_rebase_merge`: `true`
 - `delete_branch_on_merge`: `true`
-- `squash_merge_commit_title`: `PR_TITLE`
-- `squash_merge_commit_message`: `PR_BODY`
+- `merge_commit_title`: `PR_TITLE`
+- `merge_commit_message`: `PR_BODY`
 
 Result:
 
-- PR branches can contain multiple commits.
-- `main` receives one squashed commit per merged PR.
+- PR branches retain their full commit history when merged.
+- `main` receives either a merge commit (preserving the PR boundary) or rebased commits (linear history), depending on which strategy the merger picks for that PR.
+- Squash merging is disabled — full per-commit history is preserved.
 - Merged remote branches are auto-deleted.
 
 ## Merge Strategy
 
-Squash-merge only. All other merge strategies are disabled at the repository level.
+Merge commits and rebase merges are both allowed; squash merges are disabled.
+
+- **Default — merge commit.** Preserves the PR as a discoverable boundary in `main`'s history. Best when the PR contains multiple meaningful commits worth keeping addressable individually.
+- **Rebase merge.** Use when the PR's commits are clean and the linear history reads better without an extra merge node. Avoid if the PR's commits are noisy (WIP, fixups) — clean them up locally first.
+- **Authoring expectation.** Because squash is gone, individual PR commits land in `main`. Keep PR commit messages tidy: meaningful subjects, no WIP markers, no fixup chains. Squash or reword locally before opening the PR if needed.
 
 ## CI Gates
 
-CI is configured in `.github/workflows/`. Quality gates before merge:
+Workflow: `.github/workflows/ci.yml`
+
+Quality gates before merge:
 
 - `uv run ruff check .`
 - `uv run python -m pytest`
@@ -38,8 +45,9 @@ CI is configured in `.github/workflows/`. Quality gates before merge:
 
 1. Create short-lived feature branches from `main`.
 2. Open PRs early; keep them focused.
-3. Merge only with **Squash and merge** after CI passes.
-4. Periodically prune local branches:
+3. Tidy your PR commit history *before* merging — reword/squash locally so what lands on `main` reads cleanly.
+4. Pick **Create a merge commit** by default; pick **Rebase and merge** when linear history is materially better.
+5. Periodically prune local branches:
 
 ```bash
 git fetch --prune
