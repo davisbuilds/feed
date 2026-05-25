@@ -29,8 +29,7 @@ def make_sample_digest() -> DailyDigest:
         non_obvious_insight=NonObviousInsight(
             insight="Smaller stacks are improving release cadence in larger teams.",
             why_unintuitive=(
-                "Larger teams are usually expected to benefit from broader "
-                "platform breadth."
+                "Larger teams are usually expected to benefit from broader platform breadth."
             ),
             confidence=4,
             supporting_urls=["https://example.com/article"],
@@ -49,8 +48,7 @@ def make_sample_digest() -> DailyDigest:
             NonObviousInsight(
                 insight="Procurement timing is shaping architecture earlier than expected.",
                 why_unintuitive=(
-                    "Architecture choices are typically expected to precede "
-                    "vendor commitments."
+                    "Architecture choices are typically expected to precede vendor commitments."
                 ),
                 confidence=5,
                 supporting_urls=["https://example.com/article"],

@@ -59,6 +59,7 @@ def run_ingestion(
         IngestResult with statistics
     """
     import time
+
     start_time = time.time()
 
     settings = get_settings()

@@ -276,9 +276,7 @@ def get_cron_managed_block(label: str) -> str | None:
     start_idx = lines.index(start)
     end_idx = lines.index(end)
     if end_idx < start_idx:
-        raise RuntimeError(
-            "Malformed cron managed block; end marker appears before start marker."
-        )
+        raise RuntimeError("Malformed cron managed block; end marker appears before start marker.")
     return "\n".join(lines[start_idx : end_idx + 1])
 
 

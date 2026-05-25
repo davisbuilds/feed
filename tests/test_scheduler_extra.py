@@ -169,7 +169,7 @@ def test_build_launchd_path_includes_expected_entries():
 
 def test_launchd_plist_path(tmp_path):
     plan = _plan(tmp_path)
-    expected = (tmp_path / "LaunchAgents" / "com.user.feed.plist")
+    expected = tmp_path / "LaunchAgents" / "com.user.feed.plist"
     assert launchd_plist_path(plan) == expected
 
 
@@ -188,11 +188,7 @@ def test_get_cron_managed_block_returns_none_when_partial(monkeypatch):
 
 
 def test_get_cron_managed_block_malformed_order_raises(monkeypatch):
-    bad = (
-        "# <<< feed schedule (lbl) <<<\n"
-        "echo wrong-order\n"
-        "# >>> feed schedule (lbl) >>>\n"
-    )
+    bad = "# <<< feed schedule (lbl) <<<\necho wrong-order\n# >>> feed schedule (lbl) >>>\n"
     monkeypatch.setattr("src.scheduler._read_crontab", lambda: bad)
     with pytest.raises(RuntimeError):
         get_cron_managed_block("lbl")
@@ -249,11 +245,7 @@ def test_install_cron_refuses_without_replace(tmp_path, monkeypatch):
 
 def test_install_cron_malformed_block_raises(tmp_path, monkeypatch):
     plan = _plan(tmp_path)
-    bad = (
-        "# <<< feed schedule (com.user.feed) <<<\n"
-        "OLD\n"
-        "# >>> feed schedule (com.user.feed) >>>\n"
-    )
+    bad = "# <<< feed schedule (com.user.feed) <<<\nOLD\n# >>> feed schedule (com.user.feed) >>>\n"
     monkeypatch.setattr("src.scheduler._read_crontab", lambda: bad)
     monkeypatch.setattr("src.scheduler._write_crontab", lambda content: None)
     with pytest.raises(RuntimeError):

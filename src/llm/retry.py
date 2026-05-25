@@ -50,9 +50,7 @@ class RetryClient:
             except LLMError as exc:
                 if not _is_retryable(exc) or attempt == self.max_retries:
                     raise
-                delay = self.base_delay * (2 ** attempt)
-                logger.warning(
-                    f"Retry {attempt + 1}/{self.max_retries} after {delay:.1f}s: {exc}"
-                )
+                delay = self.base_delay * (2**attempt)
+                logger.warning(f"Retry {attempt + 1}/{self.max_retries} after {delay:.1f}s: {exc}")
                 time.sleep(delay)
         raise LLMError("Unexpected: retry loop exited without return or raise")

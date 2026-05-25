@@ -151,9 +151,8 @@ class Summarizer:
         results: list[SummaryResult] = []
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_article = {
-                executor.submit(
-                    self.summarize_article, article, cache, model_name
-                ): article for article in articles
+                executor.submit(self.summarize_article, article, cache, model_name): article
+                for article in articles
             }
 
             for i, future in enumerate(as_completed(future_to_article)):

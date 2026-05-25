@@ -110,10 +110,7 @@ class Database:
     def article_exists(self, article_id: str) -> bool:
         """Check if an article already exists."""
         with self._connection() as conn:
-            result = conn.execute(
-                "SELECT 1 FROM articles WHERE id = ?",
-                (article_id,)
-            ).fetchone()
+            result = conn.execute("SELECT 1 FROM articles WHERE id = ?", (article_id,)).fetchone()
             return result is not None
 
     def save_article(self, article: Article) -> bool:
@@ -124,61 +121,71 @@ class Database:
         Uses INSERT OR IGNORE for atomic deduplication.
         """
         with self._connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 INSERT OR IGNORE INTO articles (
                     id, url, title, author, feed_name, feed_url,
                     published, content, word_count, category, status,
                     summary, key_takeaways, action_items
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                article.id,
-                str(article.url),
-                article.title,
-                article.author,
-                article.feed_name,
-                article.feed_url,
-                article.published.isoformat(),
-                article.content,
-                article.word_count,
-                article.category,
-                article.status.value,
-                article.summary,
-                json.dumps(article.key_takeaways or []),
-                json.dumps(article.action_items or []),
-            ))
+            """,
+                (
+                    article.id,
+                    str(article.url),
+                    article.title,
+                    article.author,
+                    article.feed_name,
+                    article.feed_url,
+                    article.published.isoformat(),
+                    article.content,
+                    article.word_count,
+                    article.category,
+                    article.status.value,
+                    article.summary,
+                    json.dumps(article.key_takeaways or []),
+                    json.dumps(article.action_items or []),
+                ),
+            )
         return cursor.rowcount > 0
 
     def get_pending_articles(self, limit: int = 100) -> list[Article]:
         """Get articles that need summarization."""
         with self._connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT * FROM articles
                 WHERE status = 'pending'
                 ORDER BY published DESC
                 LIMIT ?
-            """, (limit,)).fetchall()
+            """,
+                (limit,),
+            ).fetchall()
 
         return [self._row_to_article(row) for row in rows]
 
     def get_articles_since(
-        self,
-        since: datetime,
-        status: ArticleStatus | None = None
+        self, since: datetime, status: ArticleStatus | None = None
     ) -> list[Article]:
         """Get articles published since a given time."""
         with self._connection() as conn:
             if status:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM articles
                     WHERE published >= ? AND status = ?
                     ORDER BY published DESC
-                """, (since.isoformat(), status.value)).fetchall()
+                """,
+                    (since.isoformat(), status.value),
+                ).fetchall()
             else:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM articles
                     WHERE published >= ?
                     ORDER BY published DESC
-                """, (since.isoformat(),)).fetchall()
+                """,
+                    (since.isoformat(),),
+                ).fetchall()
 
         return [self._row_to_article(row) for row in rows]
 
@@ -191,7 +198,8 @@ class Database:
     ) -> None:
         """Update an article with its summary."""
         with self._connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE articles SET
                     summary = ?,
                     key_takeaways = ?,
@@ -199,26 +207,27 @@ class Database:
                     status = 'summarized',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (
-                summary,
-                json.dumps(key_takeaways),
-                json.dumps(action_items),
-                article_id,
-            ))
+            """,
+                (
+                    summary,
+                    json.dumps(key_takeaways),
+                    json.dumps(action_items),
+                    article_id,
+                ),
+            )
 
-    def update_article_status(
-        self,
-        article_id: str,
-        status: ArticleStatus
-    ) -> None:
+    def update_article_status(self, article_id: str, status: ArticleStatus) -> None:
         """Update article processing status."""
         with self._connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE articles SET
                     status = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (status.value, article_id))
+            """,
+                (status.value, article_id),
+            )
 
     def _row_to_article(self, row: sqlite3.Row) -> Article:
         """Convert a database row to an Article model."""
@@ -253,7 +262,8 @@ class Database:
             now = datetime.now(UTC).isoformat()
 
             if success:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO feed_status (
                         feed_url, feed_name, last_checked, last_success, consecutive_failures
                     )
@@ -263,9 +273,12 @@ class Database:
                         last_checked = excluded.last_checked,
                         last_success = excluded.last_success,
                         consecutive_failures = 0
-                """, (feed_url, feed_name, now, now))
+                """,
+                    (feed_url, feed_name, now, now),
+                )
             else:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO feed_status (
                         feed_url, feed_name, last_checked, last_error, consecutive_failures
                     )
@@ -275,4 +288,6 @@ class Database:
                         last_checked = excluded.last_checked,
                         last_error = ?,
                         consecutive_failures = consecutive_failures + 1
-                """, (feed_url, feed_name, now, error, error))
+                """,
+                    (feed_url, feed_name, now, error, error),
+                )

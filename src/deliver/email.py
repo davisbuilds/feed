@@ -71,17 +71,19 @@ class EmailSender:
             html, text = self.renderer.render(digest, subject)
 
             # Send via Resend
-            response = resend.Emails.send({
-                "from": self.from_address,
-                "to": [recipient],
-                "subject": subject,
-                "html": html,
-                "text": text,
-                "tags": [
-                    {"name": "type", "value": "daily_digest"},
-                    {"name": "date", "value": digest.date.strftime("%Y-%m-%d")},
-                ],
-            })
+            response = resend.Emails.send(
+                {
+                    "from": self.from_address,
+                    "to": [recipient],
+                    "subject": subject,
+                    "html": html,
+                    "text": text,
+                    "tags": [
+                        {"name": "type", "value": "daily_digest"},
+                        {"name": "date", "value": digest.date.strftime("%Y-%m-%d")},
+                    ],
+                }
+            )
 
             email_id = response.get("id") if isinstance(response, dict) else str(response)
 
@@ -115,11 +117,12 @@ class EmailSender:
         logger.info(f"Sending test email to {recipient}")
 
         try:
-            response = resend.Emails.send({
-                "from": self.from_address,
-                "to": [recipient],
-                "subject": "🧪 Feed - Test Email",
-                "html": """
+            response = resend.Emails.send(
+                {
+                    "from": self.from_address,
+                    "to": [recipient],
+                    "subject": "🧪 Feed - Test Email",
+                    "html": """
                     <div
                         style="
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -148,11 +151,12 @@ class EmailSender:
                         </div>
                     </div>
                 """.format(time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                "text": (
-                    "Test email from Feed. "
-                    "If you're reading this, your configuration is working!"
-                ),
-            })
+                    "text": (
+                        "Test email from Feed. "
+                        "If you're reading this, your configuration is working!"
+                    ),
+                }
+            )
 
             email_id = response.get("id") if isinstance(response, dict) else str(response)
 

@@ -20,8 +20,7 @@ logger = get_logger("feeds")
 FEED_AGENT_HEADERS = {
     "User-Agent": "Feed/1.0",
     "Accept": (
-        "application/rss+xml, application/atom+xml, application/xml, "
-        "text/xml;q=0.9, */*;q=0.8"
+        "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8"
     ),
 }
 
@@ -115,10 +114,7 @@ def fetch_feed(
                 break
 
             # Some feed hosts/CDNs block simple bot user agents with false 404/403.
-            if (
-                status_code in BOT_FILTER_RETRY_STATUS_CODES
-                and headers is FEED_AGENT_HEADERS
-            ):
+            if status_code in BOT_FILTER_RETRY_STATUS_CODES and headers is FEED_AGENT_HEADERS:
                 logger.debug(
                     f"{feed_name}: got {status_code} with Feed headers, retrying "
                     "with browser-like headers"
@@ -178,7 +174,7 @@ def fetch_feed(
 
         articles: list[Article] = []
 
-        for entry in feed.entries[:max_articles * 2]:  # Fetch extra, filter by date
+        for entry in feed.entries[: max_articles * 2]:  # Fetch extra, filter by date
             # Parse publication date
             published = _parse_entry_date(entry)
             if published is None:
@@ -305,6 +301,7 @@ def _parse_entry_date(entry: dict) -> datetime | None:
         if parsed := entry.get(field):
             try:
                 from time import mktime
+
                 return datetime.fromtimestamp(mktime(parsed), tz=UTC)
             except (ValueError, OverflowError):
                 continue
@@ -330,9 +327,7 @@ def _extract_author(entry: dict) -> str:
         return author
 
     # Try author_detail
-    if (author_detail := entry.get("author_detail")) and (
-        name := author_detail.get("name")
-    ):
+    if (author_detail := entry.get("author_detail")) and (name := author_detail.get("name")):
         return name
 
     # Try authors list
@@ -382,8 +377,9 @@ def fetch_all_feeds(
                 feed_name=name,
                 category=cat,
                 lookback_hours=lookback_hours,
-                max_articles=max_articles_per_feed
-            ): (name, url) for url, name, cat in fetch_args
+                max_articles=max_articles_per_feed,
+            ): (name, url)
+            for url, name, cat in fetch_args
         }
 
         for future in concurrent.futures.as_completed(future_to_feed):

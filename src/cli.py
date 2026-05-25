@@ -91,8 +91,7 @@ def _load_settings():
         return get_settings()
     except Exception as e:
         console.print(
-            "[red]Configuration error.[/red] "
-            "Check your config file or environment variables.\n"
+            "[red]Configuration error.[/red] Check your config file or environment variables.\n"
         )
         for error in getattr(e, "errors", list)():
             loc = ".".join(str(part) for part in error["loc"])
@@ -131,8 +130,7 @@ _QUICK_REF_ITEMS = [
     ("run", "[--send] [--copy] [--format rich|text|json] [--no-cache]"),
     (
         "schedule",
-        "[--status] [--backend auto|cron|launchd] "
-        "[--frequency daily|weekly] [--install]",
+        "[--status] [--backend auto|cron|launchd] [--frequency daily|weekly] [--install]",
     ),
     ("ingest", ""),
     ("analyze", "[--copy] [--format rich|text|json] [--no-cache]"),
@@ -188,18 +186,9 @@ app = typer.Typer(
 
 @app.callback()
 def main(
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-        "-v",
-        help="Enable verbose logging output."
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging output."),
     version: bool | None = typer.Option(
-        None,
-        "--version",
-        callback=version_callback,
-        is_eager=True,
-        help="Show version and exit."
+        None, "--version", callback=version_callback, is_eager=True, help="Show version and exit."
     ),
 ):
     """
@@ -225,11 +214,12 @@ def init(
         console.print("Use --force to overwrite.")
         raise typer.Exit(code=1)
 
-    console.print(Panel.fit(
-        "[bold]Feed Setup Wizard[/bold]\n"
-        "Configure your Feed agent",
-        border_style="blue",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold]Feed Setup Wizard[/bold]\nConfigure your Feed agent",
+            border_style="blue",
+        )
+    )
 
     # LLM Provider
     console.print("\n[bold cyan]LLM Configuration[/bold cyan]")
@@ -323,6 +313,7 @@ LLM_API_KEY={api_key}
         )
         if copy_feeds:
             import shutil
+
             shutil.copy(sample_feeds, feeds_dest)
             console.print(f"[green]✓[/green] Copied feeds.yaml to {feeds_dest}")
             console.print("[dim]Edit this file to add your RSS feeds[/dim]")
@@ -335,14 +326,16 @@ LLM_API_KEY={api_key}
         else "Not configured (run 'feed init --force' to add later)"
     )
     # Summary
-    console.print(Panel.fit(
-        "[bold green]Setup complete![/bold green]\n\n"
-        f"Config: {config_file}\n"
-        f"Feeds:  {feeds_dest if feeds_dest.exists() else 'Not configured'}\n"
-        f"Email:  {email_status}\n\n"
-        "[dim]Run 'feed config' to verify, or 'feed run' to start[/dim]",
-        border_style="green",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold green]Setup complete![/bold green]\n\n"
+            f"Config: {config_file}\n"
+            f"Feeds:  {feeds_dest if feeds_dest.exists() else 'Not configured'}\n"
+            f"Email:  {email_status}\n\n"
+            "[dim]Run 'feed config' to verify, or 'feed run' to start[/dim]",
+            border_style="green",
+        )
+    )
 
 
 def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
@@ -355,7 +348,9 @@ def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
     pbcopy = shutil.which("pbcopy")
     if pbcopy:
         proc = subprocess.run(
-            [pbcopy], input=markdown.encode(), check=False,
+            [pbcopy],
+            input=markdown.encode(),
+            check=False,
         )
         return proc.returncode == 0
 
@@ -380,6 +375,7 @@ def _print_digest(digest: DailyDigest, output_format: str) -> None:
         print(json.dumps(digest.model_dump(mode="json"), indent=2, default=str))
     elif output_format == "text":
         from src.deliver.renderer import EmailRenderer
+
         renderer = EmailRenderer()
         print(renderer.render_text(digest))
     else:  # rich
@@ -410,11 +406,13 @@ def _print_digest_rich(digest: DailyDigest) -> None:
     for category in digest.categories:
         # Category header
         console.print()
-        console.print(Rule(
-            f"[bold]{category.name}[/bold] ({category.article_count} "
-            f"article{'s' if category.article_count != 1 else ''})",
-            style="dim",
-        ))
+        console.print(
+            Rule(
+                f"[bold]{category.name}[/bold] ({category.article_count} "
+                f"article{'s' if category.article_count != 1 else ''})",
+                style="dim",
+            )
+        )
 
         # Synthesis
         if category.synthesis:
@@ -429,8 +427,7 @@ def _print_digest_rich(digest: DailyDigest) -> None:
             console.print("\n[bold]NON-OBVIOUS INSIGHT:[/bold]")
             console.print(f"  • {category.non_obvious_insight.insight}")
             console.print(
-                "    [dim]Why unintuitive: "
-                f"{category.non_obvious_insight.why_unintuitive}[/dim]"
+                f"    [dim]Why unintuitive: {category.non_obvious_insight.why_unintuitive}[/dim]"
             )
 
         # Articles table
@@ -461,10 +458,12 @@ def _print_digest_rich(digest: DailyDigest) -> None:
 
     # Footer
     console.print()
-    console.print(Panel.fit(
-        f"[dim]Generated in {digest.processing_time_seconds:.1f}s[/dim]",
-        border_style="dim",
-    ))
+    console.print(
+        Panel.fit(
+            f"[dim]Generated in {digest.processing_time_seconds:.1f}s[/dim]",
+            border_style="dim",
+        )
+    )
 
 
 @app.command()
@@ -477,12 +476,14 @@ def run(
     """Run the full digest pipeline: ingest → analyze → send."""
     settings = _load_settings()
 
-    console.print(Panel.fit(
-        "[bold]📬 Feed CLI[/bold]\n"
-        f"Running full pipeline at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"Model: {settings.llm_provider}/{settings.llm_model}",
-        border_style="blue",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold]📬 Feed CLI[/bold]\n"
+            f"Running full pipeline at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Model: {settings.llm_provider}/{settings.llm_model}",
+            border_style="blue",
+        )
+    )
 
     db = Database(settings.data_dir / "articles.db")
 
@@ -532,9 +533,7 @@ def run(
         console.print(f"  ✓ Analyzed {analysis_result.articles_analyzed} articles")
         cost = analysis_result.cost_estimate_usd
         cost_str = f"${cost:.4f}" if cost is not None else "$?.????"
-        console.print(
-            f"  ✓ Used {analysis_result.tokens_used:,} tokens ({cost_str})"
-        )
+        console.print(f"  ✓ Used {analysis_result.tokens_used:,} tokens ({cost_str})")
 
     # Phase 3: Output or Send
     if analysis_result and analysis_result.digest:
@@ -563,8 +562,7 @@ def run(
             console.print("\n  [green]✓[/green] Copied digest to clipboard (markdown)")
         else:
             console.print(
-                "\n  [yellow]⚠ Could not copy to clipboard"
-                " (no clipboard tool found)[/yellow]"
+                "\n  [yellow]⚠ Could not copy to clipboard (no clipboard tool found)[/yellow]"
             )
 
     # Summary
@@ -572,10 +570,12 @@ def run(
     if analysis_result:
         total_time += analysis_result.duration_seconds
 
-    console.print(Panel.fit(
-        f"[bold green]✓ Complete[/bold green] in {total_time:.1f}s",
-        border_style="green",
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold green]✓ Complete[/bold green] in {total_time:.1f}s",
+            border_style="green",
+        )
+    )
 
 
 @app.command()
@@ -827,8 +827,7 @@ def analyze(
                 console.print("\n[green]✓[/green] Copied digest to clipboard (markdown)")
             else:
                 console.print(
-                    "\n[yellow]⚠ Could not copy to clipboard"
-                    " (no clipboard tool found)[/yellow]"
+                    "\n[yellow]⚠ Could not copy to clipboard (no clipboard tool found)[/yellow]"
                 )
 
 
@@ -868,12 +867,14 @@ def send(
     # Test mode: send test email
     if test:
         from src.deliver import EmailSender
+
         sender = EmailSender()
         console.print("[bold]Sending test email...[/bold]")
         result = sender.send_test_email()
     else:
         # Normal send
         from src.deliver import EmailSender
+
         sender = EmailSender()
         console.print(f"[bold]Sending digest ({len(articles)} articles)...[/bold]")
         result = sender.send_digest(digest)
@@ -1160,7 +1161,7 @@ def status(
         "recent_articles": [
             {"title": row[0], "source": row[1], "published": row[2], "status": row[3]}
             for row in recent
-        ]
+        ],
     }
 
     if json_format:

@@ -138,8 +138,7 @@ class TestDigestBuilder:
                     "non_obvious_insight": {
                         "insight": "Smaller teams are shipping faster by narrowing model scope.",
                         "why_unintuitive": (
-                            "The common assumption is that more model variety "
-                            "increases velocity."
+                            "The common assumption is that more model variety increases velocity."
                         ),
                         "confidence": 4,
                         "supporting_urls": [str(sample_article.url)],
@@ -194,8 +193,7 @@ class TestDigestBuilder:
                     "non_obvious_insight": {
                         "insight": "Cross-team experimentation has slowed despite more tooling.",
                         "why_unintuitive": (
-                            "Tooling growth is usually associated with faster "
-                            "experimentation."
+                            "Tooling growth is usually associated with faster experimentation."
                         ),
                         "confidence": 2,
                         "supporting_urls": [str(sample_article.url)],
@@ -312,12 +310,10 @@ class TestDigestBuilder:
                 "cross_category_insights": [
                     {
                         "insight": (
-                            "Cost pressure is driving model simplification across "
-                            "departments."
+                            "Cost pressure is driving model simplification across departments."
                         ),
                         "why_unintuitive": (
-                            "Product teams often treat model complexity as a sign "
-                            "of progress."
+                            "Product teams often treat model complexity as a sign of progress."
                         ),
                         "confidence": 5,
                         "supporting_urls": [str(sample_article.url), str(business_article.url)],
@@ -332,12 +328,10 @@ class TestDigestBuilder:
                     },
                     {
                         "insight": (
-                            "Procurement choices are setting architecture direction "
-                            "earlier."
+                            "Procurement choices are setting architecture direction earlier."
                         ),
                         "why_unintuitive": (
-                            "Architecture decisions are often assumed to precede "
-                            "vendor decisions."
+                            "Architecture decisions are often assumed to precede vendor decisions."
                         ),
                         "confidence": 5,
                         "supporting_urls": [str(business_article.url)],
@@ -382,9 +376,7 @@ class TestSummarizerCache:
         cache.set("summary", key, cached_data)
 
         summarizer = Summarizer(client=mock_client)
-        result = summarizer.summarize_article(
-            sample_article, cache=cache, model_name=model_name
-        )
+        result = summarizer.summarize_article(sample_article, cache=cache, model_name=model_name)
 
         assert result["summary"] == "cached summary"
         assert result["key_takeaways"] == ["cached insight"]
@@ -407,9 +399,7 @@ class TestSummarizerCache:
         key = make_cache_key(sample_article.id, model_name)
 
         summarizer = Summarizer(client=mock_client)
-        result = summarizer.summarize_article(
-            sample_article, cache=cache, model_name=model_name
-        )
+        result = summarizer.summarize_article(sample_article, cache=cache, model_name=model_name)
 
         assert result["summary"] == "fresh summary"
         mock_client.generate.assert_called_once()

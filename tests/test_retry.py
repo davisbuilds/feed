@@ -71,10 +71,12 @@ class TestRetryClient:
         assert inner.call_count == 1
 
     def test_retries_on_retryable_error_then_succeeds(self):
-        inner = FakeClient([
-            LLMError("request timed out"),
-            OK_RESPONSE,
-        ])
+        inner = FakeClient(
+            [
+                LLMError("request timed out"),
+                OK_RESPONSE,
+            ]
+        )
         client = RetryClient(inner, max_retries=2, base_delay=0.01)
 
         result = client.generate("prompt", "system", object)
@@ -83,11 +85,13 @@ class TestRetryClient:
         assert inner.call_count == 2
 
     def test_raises_after_max_retries_exhausted(self):
-        inner = FakeClient([
-            LLMError("request timed out"),
-            LLMError("request timed out"),
-            LLMError("request timed out"),
-        ])
+        inner = FakeClient(
+            [
+                LLMError("request timed out"),
+                LLMError("request timed out"),
+                LLMError("request timed out"),
+            ]
+        )
         client = RetryClient(inner, max_retries=2, base_delay=0.01)
 
         with pytest.raises(LLMError, match="timed out"):
@@ -114,11 +118,13 @@ class TestRetryClient:
         assert inner.call_count == 1
 
     def test_backoff_delay_increases(self):
-        inner = FakeClient([
-            LLMError("request timed out"),
-            LLMError("request timed out"),
-            OK_RESPONSE,
-        ])
+        inner = FakeClient(
+            [
+                LLMError("request timed out"),
+                LLMError("request timed out"),
+                OK_RESPONSE,
+            ]
+        )
         client = RetryClient(inner, max_retries=2, base_delay=0.05)
 
         start = time.monotonic()

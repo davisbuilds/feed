@@ -71,11 +71,7 @@ def test_ignores_legacy_gemini_model_for_non_gemini_provider(monkeypatch) -> Non
 def test_feed_config_rejects_invalid_feed_url(tmp_path) -> None:
     """Feed entries should fail fast on invalid URLs."""
     feeds_path = tmp_path / "feeds.yaml"
-    feeds_path.write_text(
-        "feeds:\n"
-        "  bad_feed:\n"
-        "    url: definitely-not-a-url\n"
-    )
+    feeds_path.write_text("feeds:\n  bad_feed:\n    url: definitely-not-a-url\n")
 
     with pytest.raises(ValueError, match="bad_feed"):
         FeedConfig(feeds_path)
@@ -84,10 +80,7 @@ def test_feed_config_rejects_invalid_feed_url(tmp_path) -> None:
 def test_feed_config_rejects_non_mapping_feed_entry(tmp_path) -> None:
     """Feed entry values must be mapping objects."""
     feeds_path = tmp_path / "feeds.yaml"
-    feeds_path.write_text(
-        "feeds:\n"
-        "  bad_feed: https://example.com/feed.xml\n"
-    )
+    feeds_path.write_text("feeds:\n  bad_feed: https://example.com/feed.xml\n")
 
     with pytest.raises(ValueError, match="bad_feed"):
         FeedConfig(feeds_path)

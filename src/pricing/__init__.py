@@ -46,15 +46,12 @@ def lookup(model: str) -> ModelPricing | None:
     return _REGISTRY.get(model)
 
 
-def estimate_cost(
-    model: str, input_tokens: int, output_tokens: int
-) -> float | None:
+def estimate_cost(model: str, input_tokens: int, output_tokens: int) -> float | None:
     """Calculate USD cost for a model invocation. Returns None if model unknown."""
     pricing = lookup(model)
     if pricing is None:
         logger.warning(f"No pricing data for model '{model}'")
         return None
-    return (
-        (input_tokens / 1_000_000) * pricing.input_cost_per_mtok
-        + (output_tokens / 1_000_000) * pricing.output_cost_per_mtok
-    )
+    return (input_tokens / 1_000_000) * pricing.input_cost_per_mtok + (
+        output_tokens / 1_000_000
+    ) * pricing.output_cost_per_mtok

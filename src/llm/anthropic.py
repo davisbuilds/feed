@@ -24,11 +24,7 @@ class AnthropicClient:
     ) -> LLMResponse:
         """Generate JSON with Anthropic and normalize the response."""
         schema_json = json.dumps(response_schema.model_json_schema(), indent=2)
-        user_prompt = (
-            f"{prompt}\n\n"
-            "Return valid JSON matching this schema exactly:\n"
-            f"{schema_json}"
-        )
+        user_prompt = f"{prompt}\n\nReturn valid JSON matching this schema exactly:\n{schema_json}"
 
         try:
             response = self.client.messages.create(

@@ -16,9 +16,21 @@ logger = get_logger("parser")
 
 # Tags to remove entirely (including content)
 REMOVE_TAGS = {
-    "script", "style", "nav", "header", "footer", "aside",
-    "form", "button", "input", "iframe", "noscript",
-    "svg", "canvas", "video", "audio",
+    "script",
+    "style",
+    "nav",
+    "header",
+    "footer",
+    "aside",
+    "form",
+    "button",
+    "input",
+    "iframe",
+    "noscript",
+    "svg",
+    "canvas",
+    "video",
+    "audio",
 }
 
 # Minimum word count to consider content valid
@@ -92,13 +104,13 @@ def extract_text_content(html: str, base_url: str = "") -> str:
 
     # Try Substack-specific selectors first
     for selector in [
-        "div.body.markup",           # Substack posts
-        "article.post",              # Many blogs
-        "div.post-content",          # Common pattern
-        "article",                   # Semantic HTML
-        "main",                      # Semantic HTML
-        "div.entry-content",         # WordPress
-        "div.article-content",       # News sites
+        "div.body.markup",  # Substack posts
+        "article.post",  # Many blogs
+        "div.post-content",  # Common pattern
+        "article",  # Semantic HTML
+        "main",  # Semantic HTML
+        "div.entry-content",  # WordPress
+        "div.article-content",  # News sites
     ]:
         if "." in selector:
             tag, class_name = selector.split(".", 1)

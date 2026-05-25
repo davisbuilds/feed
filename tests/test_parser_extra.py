@@ -89,9 +89,7 @@ def test_extract_text_content_finds_main():
 def test_fetch_article_content_populates_word_count(mock_get):
     mock_response = MagicMock()
     mock_response.text = (
-        "<html><body><article><p>"
-        + " ".join(["word"] * 60)
-        + "</p></article></body></html>"
+        "<html><body><article><p>" + " ".join(["word"] * 60) + "</p></article></body></html>"
     )
     mock_response.raise_for_status = MagicMock()
     mock_get.return_value = mock_response

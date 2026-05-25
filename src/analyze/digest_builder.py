@@ -57,8 +57,7 @@ class OverallSynthesisResponse(BaseModel):
         description="List of major cross-cutting themes",
     )
     must_read_overall: list[str] = Field(
-        default_factory=list,
-        description="URLs of exceptionally valuable articles"
+        default_factory=list, description="URLs of exceptionally valuable articles"
     )
     cross_category_insights: list[InsightResponse] = Field(
         default_factory=list,
@@ -89,9 +88,7 @@ class DigestBuilder:
         self.insight_min_confidence = insight_min_confidence
         self.max_insights_per_digest = max_insights_per_digest
 
-    def build_digest(
-        self, articles: list[Article]
-    ) -> tuple[DailyDigest, int, int]:
+    def build_digest(self, articles: list[Article]) -> tuple[DailyDigest, int, int]:
         """Build a complete daily digest from articles.
 
         Returns (digest, input_tokens, output_tokens).
@@ -115,8 +112,8 @@ class DigestBuilder:
             total_in += c_in
             total_out += c_out
 
-        overall_themes, must_read, non_obvious_insights, o_in, o_out = (
-            self._synthesize_overall(category_digests)
+        overall_themes, must_read, non_obvious_insights, o_in, o_out = self._synthesize_overall(
+            category_digests
         )
         total_in += o_in
         total_out += o_out
@@ -267,10 +264,7 @@ class DigestBuilder:
         if self.insights_mode == "off" or insight is None:
             return None
 
-        if (
-            self.insights_mode == "auto"
-            and insight.confidence < self.insight_min_confidence
-        ):
+        if self.insights_mode == "auto" and insight.confidence < self.insight_min_confidence:
             return None
 
         insight_text = insight.insight.strip()

@@ -28,9 +28,7 @@ def test_openai_client_generates_json_and_usage(monkeypatch) -> None:
         def create(self, **kwargs):
             self.kwargs = kwargs
             return SimpleNamespace(
-                choices=[
-                    SimpleNamespace(message=SimpleNamespace(content='{"answer": "ok"}'))
-                ],
+                choices=[SimpleNamespace(message=SimpleNamespace(content='{"answer": "ok"}'))],
                 usage=SimpleNamespace(prompt_tokens=11, completion_tokens=7),
             )
 
@@ -133,9 +131,10 @@ def test_anthropic_client_generates_json_and_usage(monkeypatch) -> None:
     assert response.input_tokens == 13
     assert response.output_tokens == 5
     assert client.client.messages.kwargs["model"] == "claude-test"
-    assert "Return valid JSON matching this schema exactly" in client.client.messages.kwargs[
-        "messages"
-    ][0]["content"]
+    assert (
+        "Return valid JSON matching this schema exactly"
+        in client.client.messages.kwargs["messages"][0]["content"]
+    )
 
 
 def test_anthropic_text_extraction_accepts_objects_and_empty_blocks(monkeypatch) -> None:

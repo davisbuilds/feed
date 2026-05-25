@@ -247,6 +247,7 @@ class TestFeedTimeout:
     def test_fetch_feed_handles_timeout_error(self, mock_get):
         """A timeout from httpx should produce a failed FeedResult, not a crash."""
         import httpx
+
         mock_get.side_effect = httpx.TimeoutException("timed out")
 
         result = fetch_feed(
