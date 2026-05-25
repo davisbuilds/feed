@@ -52,3 +52,8 @@ temp/
 
 # Misc
 **/archive/
+
+# Agents
+.claude
+.agents
+.agent
