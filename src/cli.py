@@ -94,7 +94,7 @@ def _load_settings():
             "[red]Configuration error.[/red] "
             "Check your config file or environment variables.\n"
         )
-        for error in getattr(e, "errors", lambda: [])():
+        for error in getattr(e, "errors", list)():
             loc = ".".join(str(part) for part in error["loc"])
             console.print(f"  [red]✗[/red] {loc}: {error['msg']}")
         if not getattr(e, "errors", None):
@@ -354,7 +354,7 @@ def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
 
     pbcopy = shutil.which("pbcopy")
     if pbcopy:
-        proc = subprocess.run(  # noqa: S603
+        proc = subprocess.run(
             [pbcopy], input=markdown.encode(), check=False,
         )
         return proc.returncode == 0
@@ -368,7 +368,7 @@ def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
                 if cmd == "xclip"
                 else [path, "--clipboard", "--input"]
             )
-            proc = subprocess.run(args, input=markdown.encode(), check=False)  # noqa: S603
+            proc = subprocess.run(args, input=markdown.encode(), check=False)
             return proc.returncode == 0
 
     return False

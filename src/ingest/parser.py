@@ -21,9 +21,6 @@ REMOVE_TAGS = {
     "svg", "canvas", "video", "audio",
 }
 
-# Tags that typically contain the main content
-CONTENT_TAGS = {"article", "main", "div.post-content", "div.entry-content"}
-
 # Minimum word count to consider content valid
 MIN_WORD_COUNT = 50
 

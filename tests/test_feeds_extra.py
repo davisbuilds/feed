@@ -7,7 +7,6 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import httpx
-import pytest
 
 from src.ingest.feeds import (
     _extract_author,

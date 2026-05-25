@@ -90,17 +90,3 @@ class DailyDigest(BaseModel):
         default_factory=list,
         description="Optional cross-category non-obvious insights",
     )
-
-
-class DigestStats(BaseModel):
-    """Statistics about digest generation."""
-
-    feeds_checked: int = 0
-    feeds_successful: int = 0
-    feeds_failed: int = 0
-    articles_found: int = 0
-    articles_new: int = 0
-    articles_summarized: int = 0
-    tokens_used: int = 0
-    cost_estimate_usd: float = 0.0
-    duration_seconds: float = 0.0

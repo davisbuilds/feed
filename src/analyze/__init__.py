@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 logger = get_logger("analyze")
 
-__all__ = ["run_analysis", "AnalysisResult"]
+__all__ = ["AnalysisResult", "run_analysis"]
 
 
 class AnalysisResult(NamedTuple):

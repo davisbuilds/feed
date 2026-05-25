@@ -14,7 +14,7 @@ from .parser import process_articles
 
 logger = get_logger("ingest")
 
-__all__ = ["run_ingestion", "IngestResult"]
+__all__ = ["IngestResult", "run_ingestion"]
 
 
 class IngestResult:

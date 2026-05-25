@@ -34,18 +34,18 @@ from src.scheduler import (
 
 
 def _plan(tmp_path: Path, **overrides) -> SchedulePlan:
-    defaults = dict(
-        backend="cron",
-        frequency="weekly",
-        day_of_week="fri",
-        time_str="17:00",
-        lookback_hours=168,
-        project_root=tmp_path,
-        runner_override="uv run feed",
-        log_file=Path("logs/cron.log"),
-        label="com.user.feed",
-        launch_agents_dir=tmp_path / "LaunchAgents",
-    )
+    defaults = {
+        "backend": "cron",
+        "frequency": "weekly",
+        "day_of_week": "fri",
+        "time_str": "17:00",
+        "lookback_hours": 168,
+        "project_root": tmp_path,
+        "runner_override": "uv run feed",
+        "log_file": Path("logs/cron.log"),
+        "label": "com.user.feed",
+        "launch_agents_dir": tmp_path / "LaunchAgents",
+    }
     defaults.update(overrides)
     return build_plan(**defaults)
 
@@ -268,9 +268,8 @@ def test_read_crontab_returns_empty_when_no_crontab():
 
 def test_read_crontab_raises_on_unknown_error():
     fake = MagicMock(returncode=2, stdout="", stderr="permission denied")
-    with patch("src.scheduler.subprocess.run", return_value=fake):
-        with pytest.raises(RuntimeError):
-            _read_crontab()
+    with patch("src.scheduler.subprocess.run", return_value=fake), pytest.raises(RuntimeError):
+        _read_crontab()
 
 
 def test_launchd_domain_and_service_format():

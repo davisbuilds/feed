@@ -28,7 +28,7 @@ def _article(url: str = "https://example.com/a") -> Article:
 
 
 def test_clean_text_strips_unicode_whitespace():
-    text = "a b c"
+    text = "a\xa0b\u2003c"
     assert clean_text(text) == "a b c"
 
 
