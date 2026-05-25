@@ -4,6 +4,43 @@ Your personal newsletter intelligence agent. Aggregates RSS feeds (Substack, blo
 
 Current CLI version: `v0.3.0`.
 
+## 🤖 Agent Setup
+
+New here? Paste the prompt below into your coding agent (Claude Code, Codex, etc.) and it will clone, install, configure, and verify the repo for you, then tell you exactly which API keys you still need to supply.
+
+```text
+Set up the `feed` repo for me. It's a Python CLI (Python 3.12+, uv, Typer/Rich,
+SQLite) that fetches RSS feeds, summarizes them with an LLM, and delivers a digest
+to the terminal or email.
+
+Do this, in order:
+
+1. Install deps. Ensure `uv` is installed (https://astral.sh/uv); then run `uv sync`
+   from the repo root. If we're not in the repo yet, clone
+   https://github.com/davisbuilds/feed.git and cd into it first.
+
+2. Configure env. Copy `.env.example` to `.env`. Fill values with clearly-labeled
+   placeholders for now — do NOT invent real keys. Then tell me which are REQUIRED
+   vs OPTIONAL:
+   - REQUIRED to run a real digest: LLM_API_KEY (+ LLM_PROVIDER, defaults to gemini;
+     openai/anthropic also supported).
+   - OPTIONAL, email delivery only: RESEND_API_KEY, EMAIL_FROM, EMAIL_TO.
+
+3. Verify the setup works WITHOUT any secrets. Run `uv run python -m pytest`
+   (note: use `python -m pytest`, not `uv run pytest`) and `./feed --help`. Both
+   should succeed offline. If either fails, show me the error and stop.
+
+4. Report back: confirm install + smoke passed, list exactly which keys I still
+   need to provide a real value for and what each unlocks, and give me the single
+   command to run it for real (`./feed init` for the guided wizard, or `./feed run`
+   once LLM_API_KEY is set).
+
+Don't commit anything, and don't run commands that need a real API key until I give
+you one.
+```
+
+Prefer to do it yourself? The manual steps are below.
+
 ## Quickstart
 
 ```bash
