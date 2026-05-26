@@ -6,7 +6,7 @@
 
 - `docs/system/ARCHITECTURE.md` — pipeline flow, CLI layer, LLM abstraction (provider defaults), storage tables, cache, scheduler backends, directory map.
 - `docs/system/FEATURES.md` — full CLI command reference, config variables, ingestion/analysis/delivery features, scheduling, cache.
-- `docs/system/OPERATIONS.md` — local dev, full command list (incl. the `uv run python -m pytest` form), env vars, XDG paths, scripts catalog, data files.
+- `docs/system/OPERATIONS.md` — local dev, command list, CI/local verification, env vars, XDG paths, scripts catalog, local data/privacy, recovery/troubleshooting.
 - `docs/project/ROADMAP.md` — shipped highlights and pointers to active plans under `docs/plans/`.
 - `docs/project/GIT_HISTORY_POLICY.md` — history conventions.
 
@@ -47,3 +47,4 @@ Ruff handles modern-Python style: `datetime.UTC` over `timezone.utc` (UP017), `c
 
 - **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
 - **Keep docs current.** After a significant change, PR, or completed spec/plan, update any now-stale reference docs under `docs/system/` (and `docs/project/ROADMAP.md`) so they match shipped behavior. Skip this for trivial changes.
+- **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
