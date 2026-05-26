@@ -1,13 +1,15 @@
 # Feed
 
-Personal newsletter intelligence CLI. Feed fetches RSS/Atom feeds, summarizes new
-articles with an LLM, and delivers a digest to the terminal, clipboard, or email.
+Personal newsletter intelligence CLI. Feed fetches RSS/Atom/Substack feeds, summarizes
+new articles with an LLM, and delivers a digest to the terminal, clipboard, or email.
 
 Current CLI version: `v0.3.0`.
 
 ## Agent Setup
 
-New here? Paste the prompt below into your coding agent (Claude Code, Codex, etc.) and it will clone, install, configure, and verify the repo for you, then tell you exactly which API keys you still need to supply.
+New here? Paste the prompt below into your coding agent (Claude Code, Codex, etc.)
+and it will clone, install, configure, and verify the repo for you, then tell you
+exactly which API keys you still need to supply.
 
 ```text
 Set up the `feed` repo for me. It's a Python CLI (Python 3.12+, uv, Typer/Rich,
