@@ -5,12 +5,12 @@ Using Pydantic for validation and serialization.
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, HttpUrl
 
 
-class ArticleStatus(str, Enum):
+class ArticleStatus(StrEnum):
     """Processing status for an article."""
 
     PENDING = "pending"

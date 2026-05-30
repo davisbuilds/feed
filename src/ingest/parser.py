@@ -36,6 +36,25 @@ REMOVE_TAGS = {
 # Minimum word count to consider content valid
 MIN_WORD_COUNT = 50
 
+_UNICODE_WHITESPACE_RE = re.compile(r"[\u00a0\u2000-\u200b\u2028\u2029\u202f\u205f\u3000]")
+_EXCESSIVE_NEWLINES_RE = re.compile(r"\n{3,}")
+_EXCESSIVE_SPACES_RE = re.compile(r" {2,}")
+_NEWSLETTER_ARTIFACT_RE = re.compile(
+    "|".join(
+        [
+            r"(?:Subscribe to .+? newsletter)",
+            r"(?:Share this post)",
+            r"(?:Leave a comment)",
+            r"(?:Read more at .+)",
+            r"(?:Click here to .+)",
+            r"(?:Unsubscribe)",
+            r"(?:View in browser)",
+            r"(?:Forward to a friend)",
+        ]
+    ),
+    flags=re.IGNORECASE,
+)
+
 
 def fetch_article_content(article: Article, timeout: int = 30) -> Article:
     """
@@ -155,28 +174,16 @@ def clean_text(text: str) -> str:
     - Remove common artifacts
     """
     # Normalize unicode whitespace
-    text = re.sub(r"[\u00a0\u2000-\u200b\u2028\u2029\u202f\u205f\u3000]", " ", text)
+    text = _UNICODE_WHITESPACE_RE.sub(" ", text)
 
     # Remove excessive newlines
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = _EXCESSIVE_NEWLINES_RE.sub("\n\n", text)
 
     # Remove excessive spaces
-    text = re.sub(r" {2,}", " ", text)
+    text = _EXCESSIVE_SPACES_RE.sub(" ", text)
 
     # Remove common newsletter artifacts
-    patterns_to_remove = [
-        r"Subscribe to .+? newsletter",
-        r"Share this post",
-        r"Leave a comment",
-        r"Read more at .+",
-        r"Click here to .+",
-        r"Unsubscribe",
-        r"View in browser",
-        r"Forward to a friend",
-    ]
-
-    for pattern in patterns_to_remove:
-        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+    text = _NEWSLETTER_ARTIFACT_RE.sub("", text)
 
     return text.strip()
 
