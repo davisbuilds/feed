@@ -325,6 +325,7 @@ version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "click" },
     { name = "feedparser" },
     { name = "google-genai" },
     { name = "httpx" },
@@ -361,6 +362,7 @@ openai = [
 requires-dist = [
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.40.0" },
     { name = "beautifulsoup4", specifier = ">=4.12.0" },
+    { name = "click", specifier = ">=8.0.0,<9.0.0" },
     { name = "feedparser", specifier = ">=6.0.0" },
     { name = "google-genai", specifier = ">=0.3.0" },
     { name = "google-genai", marker = "extra == 'gemini'", specifier = ">=0.3.0" },
