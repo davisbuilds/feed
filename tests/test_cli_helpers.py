@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 import typer
 
-from src.models import Article, CategoryDigest, DailyDigest
+from feed.models import Article, CategoryDigest, DailyDigest
 
 
 def _sample_digest() -> DailyDigest:
@@ -38,7 +38,7 @@ def _sample_digest() -> DailyDigest:
 
 def test_version_callback_prints_version_and_exits(capsys) -> None:
     """The eager version callback should print the CLI version."""
-    import src.cli as cli
+    import feed.cli as cli
 
     with pytest.raises(typer.Exit):
         cli.version_callback(True)
@@ -48,7 +48,7 @@ def test_version_callback_prints_version_and_exits(capsys) -> None:
 
 def test_version_callback_ignores_false_value(capsys) -> None:
     """The version callback should be a no-op unless requested."""
-    import src.cli as cli
+    import feed.cli as cli
 
     assert cli.version_callback(False) is None
     assert capsys.readouterr().out == ""
@@ -56,7 +56,7 @@ def test_version_callback_ignores_false_value(capsys) -> None:
 
 def test_resolve_feeds_config_path_prefers_loaded_settings(monkeypatch, tmp_path) -> None:
     """Feed config path should come from resolved settings when available."""
-    import src.cli as cli
+    import feed.cli as cli
 
     config_dir = tmp_path / "xdg"
     monkeypatch.setattr(cli, "get_settings", lambda: SimpleNamespace(config_dir=config_dir))
@@ -66,7 +66,7 @@ def test_resolve_feeds_config_path_prefers_loaded_settings(monkeypatch, tmp_path
 
 def test_resolve_feeds_config_path_falls_back_to_project_config(monkeypatch, tmp_path) -> None:
     """Feed config path should fall back when full settings cannot be loaded."""
-    import src.cli as cli
+    import feed.cli as cli
 
     monkeypatch.setattr(cli, "get_settings", lambda: (_ for _ in ()).throw(RuntimeError("bad")))
     monkeypatch.setattr(cli, "XDG_CONFIG_PATH", tmp_path / "missing")
@@ -76,7 +76,7 @@ def test_resolve_feeds_config_path_falls_back_to_project_config(monkeypatch, tmp
 
 def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None:
     """Clipboard copy should use the Linux xclip fallback when pbcopy is unavailable."""
-    import src.cli as cli
+    import feed.cli as cli
 
     calls: list[tuple[list[str], bytes, bool]] = []
 
@@ -98,7 +98,7 @@ def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None
 
 def test_copy_digest_to_clipboard_returns_false_without_tool(monkeypatch) -> None:
     """Clipboard copy should fail cleanly when no platform command exists."""
-    import src.cli as cli
+    import feed.cli as cli
 
     monkeypatch.setattr(cli.shutil, "which", lambda _command: None)
 
@@ -107,7 +107,7 @@ def test_copy_digest_to_clipboard_returns_false_without_tool(monkeypatch) -> Non
 
 def test_print_digest_json_outputs_serialized_digest(capsys) -> None:
     """JSON output should serialize the digest model."""
-    import src.cli as cli
+    import feed.cli as cli
 
     cli._print_digest(_sample_digest(), "json")
 
@@ -118,7 +118,7 @@ def test_print_digest_json_outputs_serialized_digest(capsys) -> None:
 
 def test_print_digest_text_uses_renderer(capsys) -> None:
     """Text output should use the email text renderer."""
-    import src.cli as cli
+    import feed.cli as cli
 
     cli._print_digest(_sample_digest(), "text")
 

@@ -1,4 +1,4 @@
-"""Additional tests for src/ingest/parser.py to exercise fetch + process paths."""
+"""Additional tests for src/feed/ingest/parser.py to exercise fetch + process paths."""
 
 from __future__ import annotations
 
@@ -7,13 +7,13 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 
-from src.ingest.parser import (
+from feed.ingest.parser import (
     clean_text,
     extract_text_content,
     fetch_article_content,
     process_articles,
 )
-from src.models import Article
+from feed.models import Article
 
 
 def _article(url: str = "https://example.com/a") -> Article:
@@ -85,7 +85,7 @@ def test_extract_text_content_finds_main():
     assert "Main element content" in extract_text_content(html)
 
 
-@patch("src.ingest.parser.httpx.get")
+@patch("feed.ingest.parser.httpx.get")
 def test_fetch_article_content_populates_word_count(mock_get):
     mock_response = MagicMock()
     mock_response.text = (
@@ -100,7 +100,7 @@ def test_fetch_article_content_populates_word_count(mock_get):
     assert "word" in article.content
 
 
-@patch("src.ingest.parser.httpx.get")
+@patch("feed.ingest.parser.httpx.get")
 def test_fetch_article_content_returns_article_on_http_error(mock_get):
     mock_get.side_effect = httpx.HTTPError("boom")
 
@@ -110,7 +110,7 @@ def test_fetch_article_content_returns_article_on_http_error(mock_get):
     assert article.content == ""
 
 
-@patch("src.ingest.parser.httpx.get")
+@patch("feed.ingest.parser.httpx.get")
 def test_fetch_article_content_returns_article_on_unknown_error(mock_get):
     mock_get.side_effect = RuntimeError("explode")
 
@@ -120,7 +120,7 @@ def test_fetch_article_content_returns_article_on_unknown_error(mock_get):
     assert article.content == ""
 
 
-@patch("src.ingest.parser.fetch_article_content")
+@patch("feed.ingest.parser.fetch_article_content")
 def test_process_articles_drops_low_word_count(mock_fetch):
     def _short(article):
         article.content = "tiny"

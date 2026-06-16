@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from src.llm.base import LLMError, LLMResponse
-from src.llm.retry import RetryClient, _is_retryable
+from feed.llm.base import LLMError, LLMResponse
+from feed.llm.retry import RetryClient, _is_retryable
 
 
 class FakeClient:

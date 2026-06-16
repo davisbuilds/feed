@@ -12,8 +12,8 @@ import httpx
 from dateutil.parser import ParserError
 from dateutil.parser import parse as parse_date
 
-from src.logging_config import get_logger
-from src.models import Article
+from feed.logging_config import get_logger
+from feed.models import Article
 
 logger = get_logger("feeds")
 

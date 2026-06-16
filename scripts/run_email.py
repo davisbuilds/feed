@@ -8,10 +8,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from datetime import UTC, datetime
 
-from src.config import get_settings
-from src.deliver import EmailSender
-from src.logging_config import setup_logging
-from src.models import Article, CategoryDigest, DailyDigest
+from feed.config import get_settings
+from feed.deliver import EmailSender
+from feed.logging_config import setup_logging
+from feed.models import Article, CategoryDigest, DailyDigest
 
 
 def create_sample_digest() -> DailyDigest:

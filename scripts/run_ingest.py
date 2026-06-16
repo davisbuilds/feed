@@ -6,10 +6,10 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.config import FeedConfig, get_settings
-from src.ingest import run_ingestion
-from src.logging_config import setup_logging
-from src.storage.db import Database
+from feed.config import FeedConfig, get_settings
+from feed.ingest import run_ingestion
+from feed.logging_config import setup_logging
+from feed.storage.db import Database
 
 
 def main() -> None:

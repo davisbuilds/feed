@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from src.scheduler import (
+from feed.scheduler import (
     build_cron_line,
     build_launchd_plist,
     build_plan,
@@ -148,7 +148,7 @@ def test_get_cron_managed_block_found(monkeypatch: pytest.MonkeyPatch) -> None:
         "0 17 * * 5 /bin/zsh -lc 'echo test'\n"
         "# <<< feed schedule (com.user.feed) <<<\n"
     )
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: content)
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: content)
 
     block = get_cron_managed_block("com.user.feed")
 
@@ -158,5 +158,5 @@ def test_get_cron_managed_block_found(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_get_cron_managed_block_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     """Managed block lookup should return None when absent."""
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: "# no managed block\n")
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: "# no managed block\n")
     assert get_cron_managed_block("com.user.feed") is None

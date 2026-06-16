@@ -9,7 +9,7 @@ from __future__ import annotations
 import statistics
 import time
 
-from src.ingest.parser import clean_text
+from feed.ingest.parser import clean_text
 
 ITERATIONS = 5_000
 ROUNDS = 7

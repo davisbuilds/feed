@@ -6,7 +6,7 @@ import argparse
 import shlex
 from pathlib import Path
 
-from src.scheduler import build_cron_line, build_job_shell_command, build_plan
+from feed.scheduler import build_cron_line, build_job_shell_command, build_plan
 
 
 def parse_args() -> argparse.Namespace:

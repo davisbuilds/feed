@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.scheduler import (
+from feed.scheduler import (
     SchedulePlan,
     _read_crontab,
     bootstrap_launchd,
@@ -66,9 +66,9 @@ def test_resolve_backend_explicit():
 
 
 def test_resolve_backend_auto_uses_platform(monkeypatch):
-    monkeypatch.setattr("src.scheduler.sys.platform", "darwin")
+    monkeypatch.setattr("feed.scheduler.sys.platform", "darwin")
     assert resolve_backend("auto") == "launchd"
-    monkeypatch.setattr("src.scheduler.sys.platform", "linux")
+    monkeypatch.setattr("feed.scheduler.sys.platform", "linux")
     assert resolve_backend("auto") == "cron"
 
 
@@ -181,7 +181,7 @@ def test_cron_markers_unique_per_label():
 
 def test_get_cron_managed_block_returns_none_when_partial(monkeypatch):
     monkeypatch.setattr(
-        "src.scheduler._read_crontab",
+        "feed.scheduler._read_crontab",
         lambda: "# >>> feed schedule (only-start) >>>\n0 8 * * * echo hi\n",
     )
     assert get_cron_managed_block("only-start") is None
@@ -189,20 +189,20 @@ def test_get_cron_managed_block_returns_none_when_partial(monkeypatch):
 
 def test_get_cron_managed_block_malformed_order_raises(monkeypatch):
     bad = "# <<< feed schedule (lbl) <<<\necho wrong-order\n# >>> feed schedule (lbl) >>>\n"
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: bad)
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: bad)
     with pytest.raises(RuntimeError):
         get_cron_managed_block("lbl")
 
 
 def test_install_cron_appends_when_missing(tmp_path, monkeypatch):
     plan = _plan(tmp_path)
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: "")
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: "")
     written = {}
 
     def _w(content: str) -> None:
         written["content"] = content
 
-    monkeypatch.setattr("src.scheduler._write_crontab", _w)
+    monkeypatch.setattr("feed.scheduler._write_crontab", _w)
     install_cron(plan)
 
     assert ">>> feed schedule (com.user.feed) >>>" in written["content"]
@@ -216,13 +216,13 @@ def test_install_cron_replaces_when_existing(tmp_path, monkeypatch):
         "OLD CRON ENTRY\n"
         "# <<< feed schedule (com.user.feed) <<<\n"
     )
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: existing)
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: existing)
     written = {}
 
     def _w(content: str) -> None:
         written["content"] = content
 
-    monkeypatch.setattr("src.scheduler._write_crontab", _w)
+    monkeypatch.setattr("feed.scheduler._write_crontab", _w)
     install_cron(plan, replace_existing=True)
 
     assert "OLD CRON ENTRY" not in written["content"]
@@ -237,8 +237,8 @@ def test_install_cron_refuses_without_replace(tmp_path, monkeypatch):
         "OLD CRON ENTRY\n"
         "# <<< feed schedule (com.user.feed) <<<\n"
     )
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: existing)
-    monkeypatch.setattr("src.scheduler._write_crontab", lambda content: None)
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: existing)
+    monkeypatch.setattr("feed.scheduler._write_crontab", lambda content: None)
     with pytest.raises(RuntimeError):
         install_cron(plan, replace_existing=False)
 
@@ -246,21 +246,21 @@ def test_install_cron_refuses_without_replace(tmp_path, monkeypatch):
 def test_install_cron_malformed_block_raises(tmp_path, monkeypatch):
     plan = _plan(tmp_path)
     bad = "# <<< feed schedule (com.user.feed) <<<\nOLD\n# >>> feed schedule (com.user.feed) >>>\n"
-    monkeypatch.setattr("src.scheduler._read_crontab", lambda: bad)
-    monkeypatch.setattr("src.scheduler._write_crontab", lambda content: None)
+    monkeypatch.setattr("feed.scheduler._read_crontab", lambda: bad)
+    monkeypatch.setattr("feed.scheduler._write_crontab", lambda content: None)
     with pytest.raises(RuntimeError):
         install_cron(plan)
 
 
 def test_read_crontab_returns_empty_when_no_crontab():
     fake = MagicMock(returncode=1, stdout="", stderr="no crontab for user")
-    with patch("src.scheduler.subprocess.run", return_value=fake):
+    with patch("feed.scheduler.subprocess.run", return_value=fake):
         assert _read_crontab() == ""
 
 
 def test_read_crontab_raises_on_unknown_error():
     fake = MagicMock(returncode=2, stdout="", stderr="permission denied")
-    with patch("src.scheduler.subprocess.run", return_value=fake), pytest.raises(RuntimeError):
+    with patch("feed.scheduler.subprocess.run", return_value=fake), pytest.raises(RuntimeError):
         _read_crontab()
 
 
@@ -290,7 +290,7 @@ def test_bootstrap_launchd_invokes_launchctl(tmp_path):
         calls.append(list(args))
         return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
 
-    with patch("src.scheduler.subprocess.run", side_effect=_run):
+    with patch("feed.scheduler.subprocess.run", side_effect=_run):
         domain, service = bootstrap_launchd(plan, plist_path)
 
     assert domain.startswith("gui/")

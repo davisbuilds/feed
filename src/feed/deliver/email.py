@@ -7,9 +7,9 @@ from datetime import datetime
 
 import resend
 
-from src.config import get_settings
-from src.logging_config import get_logger
-from src.models import DailyDigest
+from feed.config import get_settings
+from feed.logging_config import get_logger
+from feed.models import DailyDigest
 
 from .renderer import EmailRenderer
 

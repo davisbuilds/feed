@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
-from src.models import Article, ArticleStatus
+from feed.models import Article, ArticleStatus
 
 
 class Database:

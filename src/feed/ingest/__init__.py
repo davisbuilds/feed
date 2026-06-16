@@ -4,10 +4,10 @@ Content ingestion module.
 Coordinates feed fetching, content parsing, and storage.
 """
 
-from src.config import FeedConfig, get_settings
-from src.logging_config import get_logger
-from src.models import Article
-from src.storage.db import Database
+from feed.config import FeedConfig, get_settings
+from feed.logging_config import get_logger
+from feed.models import Article
+from feed.storage.db import Database
 
 from .feeds import fetch_all_feeds
 from .parser import process_articles

@@ -8,10 +8,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.ingest.feeds import fetch_feed, generate_article_id
-from src.ingest.parser import clean_text, extract_text_content
-from src.models import Article
-from src.storage.db import Database
+from feed.ingest.feeds import fetch_feed, generate_article_id
+from feed.ingest.parser import clean_text, extract_text_content
+from feed.models import Article
+from feed.storage.db import Database
 
 
 class TestArticleId:
@@ -168,7 +168,7 @@ class TestAtomicSave:
 class TestFeedTimeout:
     """Tests for feed fetching timeout (CONC-1 fix)."""
 
-    @patch("src.ingest.feeds.httpx.get")
+    @patch("feed.ingest.feeds.httpx.get")
     def test_fetch_feed_uses_httpx_with_timeout(self, mock_get):
         """fetch_feed should use httpx.get with the timeout parameter."""
         mock_response = Mock()
@@ -189,7 +189,7 @@ class TestFeedTimeout:
         assert call_kwargs.kwargs["timeout"] == 15
         assert call_kwargs.kwargs["follow_redirects"] is True
 
-    @patch("src.ingest.feeds.httpx.get")
+    @patch("feed.ingest.feeds.httpx.get")
     def test_fetch_feed_retries_with_browser_headers_on_404(self, mock_get):
         """A likely bot-filtered 404 should be retried with browser-like headers."""
         first = Mock()
@@ -216,7 +216,7 @@ class TestFeedTimeout:
         assert result.status_code == 200
         assert mock_get.call_count == 2
 
-    @patch("src.ingest.feeds.httpx.get")
+    @patch("feed.ingest.feeds.httpx.get")
     def test_fetch_feed_returns_http_error_details(self, mock_get):
         """HTTP failures should include status and URL diagnostics."""
         first = Mock()
@@ -243,7 +243,7 @@ class TestFeedTimeout:
         assert result.attempts == 2
         assert "HTTP 404" in (result.error or "")
 
-    @patch("src.ingest.feeds.httpx.get")
+    @patch("feed.ingest.feeds.httpx.get")
     def test_fetch_feed_handles_timeout_error(self, mock_get):
         """A timeout from httpx should produce a failed FeedResult, not a crash."""
         import httpx

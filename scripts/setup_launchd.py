@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from src.scheduler import (
+from feed.scheduler import (
     build_plan,
     launchd_domain_and_service,
     write_launchd_plist,

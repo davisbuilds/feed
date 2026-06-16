@@ -9,8 +9,8 @@ import re
 import httpx
 from bs4 import BeautifulSoup
 
-from src.logging_config import get_logger
-from src.models import Article
+from feed.logging_config import get_logger
+from feed.models import Article
 
 logger = get_logger("parser")
 

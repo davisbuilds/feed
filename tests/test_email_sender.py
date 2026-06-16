@@ -3,8 +3,8 @@
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
-from src.deliver.email import EmailSender
-from src.models import Article, CategoryDigest, DailyDigest
+from feed.deliver.email import EmailSender
+from feed.models import Article, CategoryDigest, DailyDigest
 
 
 def _sample_digest() -> DailyDigest:
@@ -34,7 +34,7 @@ def _sample_digest() -> DailyDigest:
 
 def test_send_digest_posts_rendered_payload_to_resend(monkeypatch) -> None:
     """Digest sends should include rendered bodies, metadata tags, and recipient override."""
-    import src.deliver.email as email_module
+    import feed.deliver.email as email_module
 
     sent_payloads: list[dict] = []
 
@@ -69,7 +69,7 @@ def test_send_digest_posts_rendered_payload_to_resend(monkeypatch) -> None:
 
 def test_send_test_email_reports_string_response_id(monkeypatch) -> None:
     """Test email sends should normalize non-dict SDK responses to an email id."""
-    import src.deliver.email as email_module
+    import feed.deliver.email as email_module
 
     sent_payloads: list[dict] = []
     monkeypatch.setattr(
@@ -98,7 +98,7 @@ def test_send_test_email_reports_string_response_id(monkeypatch) -> None:
 
 def test_send_digest_returns_failure_when_resend_raises(monkeypatch) -> None:
     """Provider exceptions should be returned as SendResult failures."""
-    import src.deliver.email as email_module
+    import feed.deliver.email as email_module
 
     monkeypatch.setattr(
         email_module,

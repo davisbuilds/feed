@@ -7,14 +7,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
-    from src.storage.cache import CacheStore
+    from feed.storage.cache import CacheStore
 
 from pydantic import BaseModel, Field
 
-from src.config import get_settings
-from src.llm import LLMClient, create_client
-from src.logging_config import get_logger
-from src.models import Article
+from feed.config import get_settings
+from feed.llm import LLMClient, create_client
+from feed.logging_config import get_logger
+from feed.models import Article
 
 from .prompts import ARTICLE_SUMMARY_SYSTEM, ARTICLE_SUMMARY_USER
 
@@ -65,7 +65,7 @@ class Summarizer:
         """Generate a summary for a single article."""
         # Check cache first
         if cache and model_name:
-            from src.storage.cache import make_cache_key
+            from feed.storage.cache import make_cache_key
 
             cache_key = make_cache_key(article.id, model_name)
             try:

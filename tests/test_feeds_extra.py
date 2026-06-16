@@ -1,4 +1,4 @@
-"""Additional tests for src/ingest/feeds.py covering parsing helpers."""
+"""Additional tests for src/feed/ingest/feeds.py covering parsing helpers."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 
-from src.ingest.feeds import (
+from feed.ingest.feeds import (
     _extract_author,
     _format_http_error,
     _parse_entry_date,
@@ -68,7 +68,7 @@ def test_format_http_error_includes_status_and_attempts():
     assert "content-type" in msg
 
 
-@patch("src.ingest.feeds.httpx.get")
+@patch("feed.ingest.feeds.httpx.get")
 def test_fetch_feed_handles_generic_exception(mock_get):
     mock_get.side_effect = RuntimeError("boom")
 
@@ -78,7 +78,7 @@ def test_fetch_feed_handles_generic_exception(mock_get):
     assert "boom" in (result.error or "")
 
 
-@patch("src.ingest.feeds.httpx.get")
+@patch("feed.ingest.feeds.httpx.get")
 def test_fetch_feed_handles_generic_http_error(mock_get):
     mock_get.side_effect = httpx.HTTPError("conn-reset")
 
@@ -88,7 +88,7 @@ def test_fetch_feed_handles_generic_http_error(mock_get):
     assert "conn-reset" in (result.error or "")
 
 
-@patch("src.ingest.feeds.httpx.get")
+@patch("feed.ingest.feeds.httpx.get")
 def test_fetch_feed_returns_articles_within_lookback(mock_get):
     recent = datetime.now(UTC) - timedelta(hours=1)
     pub_str = recent.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -125,7 +125,7 @@ def test_fetch_feed_returns_articles_within_lookback(mock_get):
     assert result.feed_name == "My Feed"
 
 
-@patch("src.ingest.feeds.httpx.get")
+@patch("feed.ingest.feeds.httpx.get")
 def test_fetch_feed_filters_old_articles(mock_get):
     old = datetime.now(UTC) - timedelta(days=30)
     pub_str = old.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -159,7 +159,7 @@ def test_fetch_feed_filters_old_articles(mock_get):
     assert result.articles == []
 
 
-@patch("src.ingest.feeds.httpx.get")
+@patch("feed.ingest.feeds.httpx.get")
 def test_fetch_feed_skips_entries_without_link(mock_get):
     recent = datetime.now(UTC) - timedelta(hours=1)
     pub_str = recent.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -187,7 +187,7 @@ def test_fetch_feed_skips_entries_without_link(mock_get):
     assert result.articles == []
 
 
-@patch("src.ingest.feeds.fetch_feed")
+@patch("feed.ingest.feeds.fetch_feed")
 def test_fetch_all_feeds_warns_on_missing_url(mock_fetch):
     """Feeds without 'url' should be skipped, no fetch attempted."""
     cfg = {
@@ -208,7 +208,7 @@ def test_fetch_all_feeds_warns_on_missing_url(mock_fetch):
     assert len(results) == 1
 
 
-@patch("src.ingest.feeds.fetch_feed")
+@patch("feed.ingest.feeds.fetch_feed")
 def test_fetch_all_feeds_captures_top_level_exception(mock_fetch):
     """If fetch_feed raises, fetch_all_feeds should wrap it as a FeedResult."""
     cfg = {"a": {"url": "https://example.com/a"}}

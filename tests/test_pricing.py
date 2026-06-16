@@ -1,6 +1,6 @@
 """Tests for model pricing lookup and cost estimates."""
 
-from src import pricing
+from feed import pricing
 
 
 def test_lookup_supports_aliases() -> None:

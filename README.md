@@ -136,12 +136,12 @@ troubleshooting live in [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md).
 
 ```text
 config/              default feeds.yaml
-src/analyze/         summarizer and digest builder
-src/deliver/         email sender and templates
-src/ingest/          feed fetch, parse, and diagnostics
-src/llm/             provider clients and retry wrapper
-src/storage/         SQLite DB and cache store
-src/cli.py           Typer CLI entry point
+src/feed/analyze/         summarizer and digest builder
+src/feed/deliver/         email sender and templates
+src/feed/ingest/          feed fetch, parse, and diagnostics
+src/feed/llm/             provider clients and retry wrapper
+src/feed/storage/         SQLite DB and cache store
+src/feed/cli.py           Typer CLI entry point
 scripts/             utility scripts
 tests/               pytest suite
 docs/                system, project, and plan docs

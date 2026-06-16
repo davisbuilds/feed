@@ -39,7 +39,7 @@ def test_openai_client_generates_json_and_usage(monkeypatch) -> None:
 
     openai_module.OpenAI = FakeOpenAI
     monkeypatch.setitem(sys.modules, "openai", openai_module)
-    module = _fresh_import("src.llm.openai")
+    module = _fresh_import("feed.llm.openai")
 
     client = module.OpenAIClient(api_key="key-123", model="model-abc")
     response = client.generate("prompt", "system", Answer)
@@ -58,7 +58,7 @@ def test_openai_text_extraction_accepts_parts_and_missing_message(monkeypatch) -
     openai_module = ModuleType("openai")
     openai_module.OpenAI = object
     monkeypatch.setitem(sys.modules, "openai", openai_module)
-    module = _fresh_import("src.llm.openai")
+    module = _fresh_import("feed.llm.openai")
 
     message = SimpleNamespace(
         content=[
@@ -90,7 +90,7 @@ def test_openai_client_wraps_invalid_json(monkeypatch) -> None:
 
     openai_module.OpenAI = FakeOpenAI
     monkeypatch.setitem(sys.modules, "openai", openai_module)
-    module = _fresh_import("src.llm.openai")
+    module = _fresh_import("feed.llm.openai")
 
     with pytest.raises(module.LLMError, match="OpenAI response parsing failed"):
         module.OpenAIClient(api_key="key", model="model").generate("prompt", "system", Answer)
@@ -121,7 +121,7 @@ def test_anthropic_client_generates_json_and_usage(monkeypatch) -> None:
 
     anthropic_module.Anthropic = FakeAnthropic
     monkeypatch.setitem(sys.modules, "anthropic", anthropic_module)
-    module = _fresh_import("src.llm.anthropic")
+    module = _fresh_import("feed.llm.anthropic")
 
     client = module.AnthropicClient(api_key="key-abc", model="claude-test")
     response = client.generate("prompt", "system", Answer)
@@ -142,7 +142,7 @@ def test_anthropic_text_extraction_accepts_objects_and_empty_blocks(monkeypatch)
     anthropic_module = ModuleType("anthropic")
     anthropic_module.Anthropic = object
     monkeypatch.setitem(sys.modules, "anthropic", anthropic_module)
-    module = _fresh_import("src.llm.anthropic")
+    module = _fresh_import("feed.llm.anthropic")
 
     blocks = [
         SimpleNamespace(type="text", text="first"),

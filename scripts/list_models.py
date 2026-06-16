@@ -1,6 +1,6 @@
 """List available models for the configured LLM provider."""
 
-from src.config import get_settings
+from feed.config import get_settings
 
 
 def main() -> int:

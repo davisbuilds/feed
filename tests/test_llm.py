@@ -4,8 +4,8 @@ from types import ModuleType
 
 import pytest
 
-from src.llm import LLMError, create_client
-from src.llm.retry import RetryClient
+from feed.llm import LLMError, create_client
+from feed.llm.retry import RetryClient
 
 
 class _DummyClient:
@@ -16,9 +16,9 @@ class _DummyClient:
 
 def test_create_client_openai_uses_provider_default(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should pass provider default model when model is omitted."""
-    module = ModuleType("src.llm.openai")
+    module = ModuleType("feed.llm.openai")
     module.OpenAIClient = _DummyClient
-    monkeypatch.setitem(__import__("sys").modules, "src.llm.openai", module)
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.openai", module)
 
     client = create_client(provider="openai", api_key="test-key")
 
@@ -30,9 +30,9 @@ def test_create_client_openai_uses_provider_default(monkeypatch: pytest.MonkeyPa
 
 def test_create_client_anthropic_uses_explicit_model(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should preserve explicitly passed model."""
-    module = ModuleType("src.llm.anthropic")
+    module = ModuleType("feed.llm.anthropic")
     module.AnthropicClient = _DummyClient
-    monkeypatch.setitem(__import__("sys").modules, "src.llm.anthropic", module)
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.anthropic", module)
 
     client = create_client(provider="anthropic", api_key="test-key", model="claude-custom")
 
@@ -42,7 +42,7 @@ def test_create_client_anthropic_uses_explicit_model(monkeypatch: pytest.MonkeyP
 
 def test_create_client_missing_dependency_raises_llm_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should wrap dependency import errors as LLMError."""
-    monkeypatch.delitem(__import__("sys").modules, "src.llm.openai", raising=False)
+    monkeypatch.delitem(__import__("sys").modules, "feed.llm.openai", raising=False)
 
     with pytest.raises(LLMError):
         create_client(provider="openai", api_key="test-key")
@@ -56,9 +56,9 @@ def test_create_client_unknown_provider_raises_llm_error() -> None:
 
 def test_create_client_wraps_with_retry(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should wrap provider client with RetryClient."""
-    module = ModuleType("src.llm.gemini")
+    module = ModuleType("feed.llm.gemini")
     module.GeminiClient = _DummyClient
-    monkeypatch.setitem(__import__("sys").modules, "src.llm.gemini", module)
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.gemini", module)
 
     client = create_client(provider="gemini", api_key="test-key")
 
@@ -68,9 +68,9 @@ def test_create_client_wraps_with_retry(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_create_client_passes_retry_config(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should pass max_retries to RetryClient."""
-    module = ModuleType("src.llm.gemini")
+    module = ModuleType("feed.llm.gemini")
     module.GeminiClient = _DummyClient
-    monkeypatch.setitem(__import__("sys").modules, "src.llm.gemini", module)
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.gemini", module)
 
     client = create_client(provider="gemini", api_key="test-key", max_retries=5)
 

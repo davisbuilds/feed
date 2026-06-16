@@ -38,7 +38,7 @@ dev = [
 ]
 
 [project.scripts]
-feed = "src.cli:cli"
+feed = "feed.cli:cli"
 
 [tool.ruff]
 line-length = 100
@@ -48,10 +48,10 @@ target-version = "py312"
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "ERA", "RUF", "PIE"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["src/feed"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src"]
 
 [tool.mypy]
 python_version = "3.12"

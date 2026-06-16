@@ -3,8 +3,8 @@
 import sys
 from datetime import datetime
 
-from src.config import get_settings
-from src.storage.db import Database
+from feed.config import get_settings
+from feed.storage.db import Database
 
 
 def main() -> int:

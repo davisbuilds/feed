@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from src.storage.cache import CacheStore, make_cache_key
+from feed.storage.cache import CacheStore, make_cache_key
 
 
 class TestMakeCacheKey:

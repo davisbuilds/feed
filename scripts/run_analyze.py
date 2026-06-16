@@ -6,10 +6,10 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.analyze import run_analysis
-from src.config import get_settings
-from src.logging_config import setup_logging
-from src.storage.db import Database
+from feed.analyze import run_analysis
+from feed.config import get_settings
+from feed.logging_config import setup_logging
+from feed.storage.db import Database
 
 
 def main() -> None:

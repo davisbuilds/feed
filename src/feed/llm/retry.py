@@ -5,8 +5,8 @@ import time
 
 from pydantic import BaseModel
 
-from src.llm.base import LLMError, LLMResponse
-from src.logging_config import get_logger
+from feed.llm.base import LLMError, LLMResponse
+from feed.logging_config import get_logger
 
 logger = get_logger("llm.retry")
 

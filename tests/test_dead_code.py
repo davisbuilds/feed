@@ -37,16 +37,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 # Where first-party source lives, and the base directory module names are
-# computed against. For a `src/`-as-package layout these differ from a
-# `src/<pkg>/` layout — keep them in sync with the import style used in code.
-SRC_DIR = ROOT / "src"
-MODULE_BASE = ROOT  # module names are relative to here -> "src.ingest.feeds"
-IMPORT_ROOT = "src"  # first-party import prefix
+# computed against. Keep these in sync with the import style used in code.
+SRC_DIR = ROOT / "src" / "feed"
+MODULE_BASE = ROOT / "src"  # module names are relative to here -> "feed.ingest.feeds"
+IMPORT_ROOT = "feed"  # first-party import prefix
 
 # Directories scanned for *references* in addition to source: any place a
 # symbol might legitimately be used. .py files are parsed (AST); other files
 # are searched as text so symbols used only in templates/configs aren't flagged.
-# scripts/ holds out-of-package consumers that import src.
+# scripts/ holds out-of-package consumers that import feed.
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests", ROOT / "scripts"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.html")]
 
@@ -54,7 +53,7 @@ SKIP_DIR_NAMES = {"__pycache__", ".venv", ".git", ".mypy_cache", ".ruff_cache"}
 
 # Modules invoked via console-scripts / frameworks, never imported by name.
 MODULE_EXCEPTIONS = {
-    "src.cli",  # console_scripts entry point (src.cli:cli)
+    "feed.cli",  # console_scripts entry point (feed.cli:cli)
 }
 
 # Public symbols intentionally unreferenced internally (external API, reflection,

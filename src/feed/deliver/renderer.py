@@ -6,8 +6,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from src.logging_config import get_logger
-from src.models import DailyDigest
+from feed.logging_config import get_logger
+from feed.models import DailyDigest
 
 logger = get_logger("renderer")
 

@@ -10,7 +10,7 @@ The full pipeline runs as `feed run`. Individual stages can be invoked separatel
 
 ## CLI Layer
 
-`src/cli.py` uses Typer + Rich for 10 commands:
+`src/feed/cli.py` uses Typer + Rich for 10 commands:
 
 ```text
 init, run, schedule, ingest, analyze, send, test, status, config, cache
@@ -20,7 +20,7 @@ Global options: `--verbose`, `--version`.
 
 ## LLM Abstraction
 
-Provider-agnostic design in `src/llm/`:
+Provider-agnostic design in `src/feed/llm/`:
 
 - `base.py`: `LLMClient` protocol interface + `LLMResponse` dataclass.
 - `gemini.py`, `openai.py`, `anthropic.py`: Provider implementations with structured JSON output.
@@ -37,7 +37,7 @@ Provider defaults:
 
 ## Storage Layer
 
-SQLite with WAL mode in `src/storage/`:
+SQLite with WAL mode in `src/feed/storage/`:
 
 ### Tables
 
@@ -50,7 +50,7 @@ SQLite with WAL mode in `src/storage/`:
 
 ### Cache
 
-`CacheStore` in `src/storage/cache.py`:
+`CacheStore` in `src/feed/storage/cache.py`:
 
 - SHA256 keys from `article_id:model`.
 - 7-day default TTL.
@@ -59,7 +59,7 @@ SQLite with WAL mode in `src/storage/`:
 
 ## Configuration
 
-`src/config.py` uses Pydantic Settings with two-tier env resolution:
+`src/feed/config.py` uses Pydantic Settings with two-tier env resolution:
 
 1. `~/.config/feed/config.env` — user-level XDG config.
 2. `.env` in working directory — project-level override (higher priority).
@@ -68,7 +68,7 @@ Feed definitions loaded from `settings.config_dir / "feeds.yaml"` (YAML with per
 
 ## Scheduler
 
-`src/scheduler.py` supports two backends:
+`src/feed/scheduler.py` supports two backends:
 
 - **cron**: Standard crontab entries.
 - **launchd**: macOS plist generation.
@@ -77,7 +77,7 @@ Configured via `feed schedule --backend auto|cron|launchd --frequency daily|week
 
 ## Delivery
 
-`src/deliver/`:
+`src/feed/deliver/`:
 
 - `email.py`: `EmailSender` using Resend API.
 - `renderer.py`: `EmailRenderer` with Jinja2 HTML + plain text templates.
@@ -85,15 +85,15 @@ Configured via `feed schedule --backend auto|cron|launchd --frequency daily|week
 ## Directory Map
 
 ```text
-src/analyze/              # Summarizer, digest builder, prompts
-src/deliver/              # Email sender + Jinja2 renderer
-src/ingest/               # Feed fetcher + parser
-src/llm/                  # Provider clients (3) + retry wrapper
-src/storage/              # SQLite DB + response cache
-src/cli.py                # Typer CLI entry point
-src/config.py             # Pydantic Settings + XDG support
-src/models.py             # Shared Pydantic models
-src/scheduler.py          # Cron/launchd scheduling
+src/feed/analyze/              # Summarizer, digest builder, prompts
+src/feed/deliver/              # Email sender + Jinja2 renderer
+src/feed/ingest/               # Feed fetcher + parser
+src/feed/llm/                  # Provider clients (3) + retry wrapper
+src/feed/storage/              # SQLite DB + response cache
+src/feed/cli.py                # Typer CLI entry point
+src/feed/config.py             # Pydantic Settings + XDG support
+src/feed/models.py             # Shared Pydantic models
+src/feed/scheduler.py          # Cron/launchd scheduling
 scripts/                  # Utility scripts (healthcheck, preview, setup)
 tests/                    # Pytest suite (8 files)
 config/                   # Default feeds.yaml

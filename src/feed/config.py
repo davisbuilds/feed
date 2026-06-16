@@ -7,7 +7,7 @@ import yaml
 from pydantic import AliasChoices, BaseModel, Field, HttpUrl, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.llm import PROVIDER_DEFAULTS
+from feed.llm import PROVIDER_DEFAULTS
 
 # XDG config directory for user configuration
 XDG_CONFIG_PATH = Path.home() / ".config" / "feed"

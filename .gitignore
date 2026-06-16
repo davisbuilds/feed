@@ -17,7 +17,8 @@ build/
 
 # Data
 data/
-!src/pricing/data/
+!src/feed/pricing/data/
+!src/feed/pricing/data/*.json
 *.db
 *.sqlite
 

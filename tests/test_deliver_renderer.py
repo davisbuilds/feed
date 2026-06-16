@@ -2,8 +2,8 @@
 
 from datetime import UTC, datetime
 
-from src.deliver.renderer import EmailRenderer
-from src.models import Article, CategoryDigest, DailyDigest, NonObviousInsight
+from feed.deliver.renderer import EmailRenderer
+from feed.models import Article, CategoryDigest, DailyDigest, NonObviousInsight
 
 
 def make_sample_digest() -> DailyDigest:

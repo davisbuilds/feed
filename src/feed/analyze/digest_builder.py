@@ -8,10 +8,10 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from src.config import get_settings
-from src.llm import LLMClient, create_client
-from src.logging_config import get_logger
-from src.models import Article, CategoryDigest, DailyDigest, NonObviousInsight
+from feed.config import get_settings
+from feed.llm import LLMClient, create_client
+from feed.logging_config import get_logger
+from feed.models import Article, CategoryDigest, DailyDigest, NonObviousInsight
 
 from .prompts import (
     CATEGORY_SYNTHESIS_USER,

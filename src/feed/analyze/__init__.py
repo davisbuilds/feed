@@ -5,17 +5,17 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, NamedTuple
 
-from src.config import get_settings
-from src.llm import create_client
-from src.logging_config import get_logger
-from src.models import Article, ArticleStatus, DailyDigest
-from src.storage.db import Database
+from feed.config import get_settings
+from feed.llm import create_client
+from feed.logging_config import get_logger
+from feed.models import Article, ArticleStatus, DailyDigest
+from feed.storage.db import Database
 
 from .digest_builder import DigestBuilder
 from .summarizer import Summarizer
 
 if TYPE_CHECKING:
-    from src.storage.cache import CacheStore
+    from feed.storage.cache import CacheStore
 
 logger = get_logger("analyze")
 
@@ -47,7 +47,7 @@ def run_analysis(
     """Run the full analysis pipeline."""
     import time
 
-    from src import pricing
+    from feed import pricing
 
     start_time = time.time()
 
@@ -67,7 +67,7 @@ def run_analysis(
     # Set up cache unless disabled
     cache: CacheStore | None = None
     if not no_cache:
-        from src.storage.cache import CacheStore
+        from feed.storage.cache import CacheStore
 
         cache = CacheStore(
             db_path=db.db_path,

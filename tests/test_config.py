@@ -2,8 +2,8 @@
 
 import pytest
 
-from src import config
-from src.config import FeedConfig, Settings
+from feed import config
+from feed.config import FeedConfig, Settings
 
 
 def test_settings_supports_legacy_google_api_key_alias(monkeypatch) -> None:

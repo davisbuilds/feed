@@ -35,10 +35,10 @@ from rich.rule import Rule
 from rich.table import Table
 
 # Imports
-from src.config import XDG_CONFIG_PATH, FeedConfig, get_settings
-from src.logging_config import setup_logging
-from src.models import ArticleStatus, DailyDigest
-from src.scheduler import (
+from feed.config import XDG_CONFIG_PATH, FeedConfig, get_settings
+from feed.logging_config import setup_logging
+from feed.models import ArticleStatus, DailyDigest
+from feed.scheduler import (
     activate_launchd,
     bootstrap_launchd,
     build_cron_line,
@@ -49,7 +49,7 @@ from src.scheduler import (
     launchd_plist_path,
     write_launchd_plist,
 )
-from src.storage.db import Database
+from feed.storage.db import Database
 
 # Format choices for digest output
 FormatChoice = typer.Option(
@@ -340,7 +340,7 @@ LLM_API_KEY={api_key}
 
 def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
     """Render digest as markdown and copy to system clipboard. Returns True on success."""
-    from src.deliver.renderer import EmailRenderer
+    from feed.deliver.renderer import EmailRenderer
 
     renderer = EmailRenderer()
     markdown = renderer.render_markdown(digest)
@@ -374,7 +374,7 @@ def _print_digest(digest: DailyDigest, output_format: str) -> None:
     if output_format == "json":
         print(json.dumps(digest.model_dump(mode="json"), indent=2, default=str))
     elif output_format == "text":
-        from src.deliver.renderer import EmailRenderer
+        from feed.deliver.renderer import EmailRenderer
 
         renderer = EmailRenderer()
         print(renderer.render_text(digest))
@@ -489,7 +489,7 @@ def run(
 
     # Phase 1: Ingest
     console.print("\n[bold cyan]Phase 1: Ingesting feeds[/bold cyan]")
-    from src.ingest import run_ingestion
+    from feed.ingest import run_ingestion
 
     with Progress(
         SpinnerColumn(),
@@ -514,7 +514,7 @@ def run(
 
     # Phase 2: Analyze
     console.print("\n[bold cyan]Phase 2: Analyzing articles[/bold cyan]")
-    from src.analyze import run_analysis
+    from feed.analyze import run_analysis
 
     pending = db.get_pending_articles()
     if not pending:
@@ -539,7 +539,7 @@ def run(
     if analysis_result and analysis_result.digest:
         if send:
             console.print("\n[bold cyan]Phase 3: Sending digest[/bold cyan]")
-            from src.deliver import EmailSender
+            from feed.deliver import EmailSender
 
             sender = EmailSender()
             send_result = sender.send_digest(analysis_result.digest)
@@ -585,7 +585,7 @@ def ingest() -> None:
 
     console.print("[bold]Fetching feeds...[/bold]")
 
-    from src.ingest import run_ingestion
+    from feed.ingest import run_ingestion
 
     db = Database(settings.data_dir / "articles.db")
     result = run_ingestion(db=db)
@@ -683,7 +683,7 @@ def test_feeds(
         else:
             feeds_to_test = list(feeds.items())
 
-    from src.ingest.feeds import fetch_feed
+    from feed.ingest.feeds import fetch_feed
 
     console.print(f"[bold]Testing {len(feeds_to_test)} feed(s)...[/bold]")
     results = []
@@ -691,7 +691,7 @@ def test_feeds(
         feed_url = str(feed_cfg.get("url", "")).strip()
         category = str(feed_cfg.get("category", "Uncategorized"))
         if not feed_url:
-            from src.ingest.feeds import FeedResult
+            from feed.ingest.feeds import FeedResult
 
             results.append(
                 FeedResult(
@@ -798,7 +798,7 @@ def analyze(
 
     console.print(f"[bold]Analyzing {len(pending)} articles...[/bold]")
 
-    from src.analyze import run_analysis
+    from feed.analyze import run_analysis
 
     result = run_analysis(db=db, no_cache=no_cache)
 
@@ -853,7 +853,7 @@ def send(
         console.print("[yellow]No summarized articles available[/yellow]")
         return
 
-    from src.analyze.digest_builder import DigestBuilder
+    from feed.analyze.digest_builder import DigestBuilder
 
     builder = DigestBuilder()
     digest = builder.build_digest(articles)
@@ -866,14 +866,14 @@ def send(
 
     # Test mode: send test email
     if test:
-        from src.deliver import EmailSender
+        from feed.deliver import EmailSender
 
         sender = EmailSender()
         console.print("[bold]Sending test email...[/bold]")
         result = sender.send_test_email()
     else:
         # Normal send
-        from src.deliver import EmailSender
+        from feed.deliver import EmailSender
 
         sender = EmailSender()
         console.print(f"[bold]Sending digest ({len(articles)} articles)...[/bold]")
@@ -1341,7 +1341,7 @@ def cache_cmd(
     """Show cache statistics or clear cached responses."""
     settings = _load_settings()
 
-    from src.storage.cache import CacheStore
+    from feed.storage.cache import CacheStore
 
     cache = CacheStore(
         db_path=settings.data_dir / "articles.db",

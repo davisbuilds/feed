@@ -7,11 +7,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.analyze.digest_builder import DigestBuilder
-from src.analyze.summarizer import Summarizer
-from src.llm.base import LLMResponse
-from src.models import Article
-from src.storage.cache import CacheStore, make_cache_key
+from feed.analyze.digest_builder import DigestBuilder
+from feed.analyze.summarizer import Summarizer
+from feed.llm.base import LLMResponse
+from feed.models import Article
+from feed.storage.cache import CacheStore, make_cache_key
 
 
 @pytest.fixture
