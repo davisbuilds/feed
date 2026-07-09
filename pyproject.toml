@@ -10,7 +10,7 @@ authors = [{name = "davisbuilds"}]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "google-genai>=0.3.0",    # New Gemini SDK
+    "google-genai>=2.10.0",    # New Gemini SDK
     "feedparser>=6.0.0",      # RSS parsing
     "resend>=2.32.2",          # Email delivery
     "httpx>=0.27.0",          # HTTP client (used by anthropic)
@@ -29,7 +29,7 @@ dependencies = [
 [project.optional-dependencies]
 openai = ["openai>=2.44.0"]
 anthropic = ["anthropic>=0.116.0"]
-gemini = ["google-genai>=0.3.0"]
+gemini = ["google-genai>=2.10.0"]
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
