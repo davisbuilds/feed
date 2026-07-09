@@ -21,7 +21,7 @@ dependencies = [
     "pydantic-settings>=2.14.2", # Environment config
     "typer>=0.26.8",          # CLI framework
     "click>=8.4.2,<9.0.0",    # Directly imported for CLI parameter metadata
-    "rich>=13.0.0",           # Beautiful terminal output
+    "rich>=15.0.0",           # Beautiful terminal output
     "python-dateutil>=2.9.0", # Date parsing
     "jinja2>=3.1.0",          # Email templates
 ]
