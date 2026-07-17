@@ -36,7 +36,7 @@ The `feed init` wizard writes `config.env` and copies `feeds.yaml` into the XDG 
 ## Testing
 
 - **Pre-push** (matches CI `.github/workflows/ci.yml`): `uv run ruff check .`, `uv run ruff format --check .`, and `uv run python -m pytest`.
-- **TDD**: red/green for new features and major changes.
+- **TDD**: red/green for new features, major refactors, and large changes. The red step must fail for the behavior you're about to fix — a test that fails only because the symbol doesn't exist yet is a stub, not a red test; write the signature first, then a test that fails on the behavior. Skip the red step for code with no behavior to assert, and cover it after. For smaller edits, still run the relevant existing tests before wrapping up.
 - **Dead-code gate** (`tests/test_dead_code.py`): static checks for unused public symbols, orphaned modules, and unreachable code. Out-of-package consumers (`scripts/`) and Jinja `templates/` are part of its reference corpus. It owns cross-file dead code; ruff `F`/`ERA` own within-file unused imports/locals and commented-out code. When a symbol/module is intentionally unreferenced (external API, framework-invoked), add it to `SYMBOL_EXCEPTIONS`/`MODULE_EXCEPTIONS` with a reason rather than silencing the test.
 
 ## Conventions Enforced Elsewhere
