@@ -10,16 +10,16 @@ authors = [{name = "davisbuilds"}]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "google-genai>=2.10.0",    # New Gemini SDK
+    "google-genai>=2.12.0",    # New Gemini SDK
     "feedparser>=6.0.0",      # RSS parsing
-    "resend>=2.32.2",          # Email delivery
+    "resend>=2.33.0",          # Email delivery
     "httpx>=0.27.0",          # HTTP client (used by anthropic)
     "beautifulsoup4>=4.15.0", # HTML parsing
     "lxml>=6.1.1",            # Fast HTML/XML parser
     "pyyaml>=6.0.0",          # Config files
     "pydantic>=2.0.0",        # Data validation
     "pydantic-settings>=2.14.2", # Environment config
-    "typer>=0.26.8",          # CLI framework
+    "typer>=0.27.0",          # CLI framework
     "click>=8.4.2,<9.0.0",    # Directly imported for CLI parameter metadata
     "rich>=15.0.0",           # Beautiful terminal output
     "python-dateutil>=2.9.0", # Date parsing
@@ -27,14 +27,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-openai = ["openai>=2.44.0"]
+openai = ["openai>=2.45.0"]
 anthropic = ["anthropic>=0.116.0"]
-gemini = ["google-genai>=2.10.0"]
+gemini = ["google-genai>=2.12.0"]
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
-    "ruff>=0.15.20",
-    "mypy>=2.2.0",
+    "ruff>=0.15.21",
+    "mypy>=2.3.0",
     "pre-commit>=3.8.0",
 ]
 
