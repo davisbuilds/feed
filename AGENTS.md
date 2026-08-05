@@ -7,6 +7,7 @@
 - `docs/system/ARCHITECTURE.md` — pipeline flow, CLI layer, LLM abstraction (provider defaults), storage tables, cache, scheduler backends, directory map.
 - `docs/system/FEATURES.md` — full CLI command reference, config variables, ingestion/analysis/delivery features, scheduling, cache.
 - `docs/system/OPERATIONS.md` — local dev, command list, CI/local verification, env vars, XDG paths, scripts catalog, local data/privacy, recovery/troubleshooting.
+- `docs/system/TEST_STRATEGY.md` — test plan and strategy: ingestion/analysis/delivery edge cases, security validation, and performance benchmarks.
 - `docs/project/ROADMAP.md` — shipped highlights and pointers to active plans under `docs/plans/`.
 - `docs/project/GIT_HISTORY_POLICY.md` — history conventions.
 
