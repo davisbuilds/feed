@@ -6,10 +6,13 @@ from .base import LLMClient, LLMError, LLMResponse
 from .retry import RetryClient
 
 Provider = Literal["gemini", "openai", "anthropic"]
+ReasoningEffort = Literal["none", "low", "medium", "high", "xhigh", "max"]
+
+DEFAULT_OPENAI_REASONING_EFFORT: ReasoningEffort = "xhigh"
 
 PROVIDER_DEFAULTS: dict[Provider, str] = {
     "gemini": "gemini-3-flash-preview",
-    "openai": "gpt-4o-mini",
+    "openai": "gpt-5.6-luna",
     "anthropic": "claude-sonnet-4-20250514",
 }
 
@@ -19,6 +22,8 @@ def create_client(
     api_key: str,
     model: str | None = None,
     max_retries: int = 2,
+    reasoning_effort: ReasoningEffort = DEFAULT_OPENAI_REASONING_EFFORT,
+    timeout: float = 120,
 ) -> RetryClient:
     """Create an LLM client for the given provider, wrapped with retry logic."""
     if provider not in PROVIDER_DEFAULTS:
@@ -35,7 +40,12 @@ def create_client(
             case "openai":
                 from .openai import OpenAIClient
 
-                inner = OpenAIClient(api_key=api_key, model=resolved_model)
+                inner = OpenAIClient(
+                    api_key=api_key,
+                    model=resolved_model,
+                    reasoning_effort=reasoning_effort,
+                    timeout=timeout,
+                )
             case "anthropic":
                 from .anthropic import AnthropicClient
 
@@ -50,11 +60,13 @@ def create_client(
 
 
 __all__ = [
+    "DEFAULT_OPENAI_REASONING_EFFORT",
     "PROVIDER_DEFAULTS",
     "LLMClient",
     "LLMError",
     "LLMResponse",
     "Provider",
+    "ReasoningEffort",
     "RetryClient",
     "create_client",
 ]

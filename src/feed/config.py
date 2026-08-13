@@ -7,7 +7,7 @@ import yaml
 from pydantic import AliasChoices, BaseModel, Field, HttpUrl, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from feed.llm import PROVIDER_DEFAULTS
+from feed.llm import DEFAULT_OPENAI_REASONING_EFFORT, PROVIDER_DEFAULTS, ReasoningEffort
 
 # XDG config directory for user configuration
 XDG_CONFIG_PATH = Path.home() / ".config" / "feed"
@@ -27,19 +27,29 @@ class Settings(BaseSettings):
 
     # LLM
     llm_provider: Literal["gemini", "openai", "anthropic"] = Field(
-        default="gemini",
+        default="openai",
         description="LLM provider to use",
     )
-    llm_api_key: str = Field(
-        ...,
+    llm_api_key: str | None = Field(
+        default=None,
         min_length=1,
         validation_alias=AliasChoices("LLM_API_KEY", "GOOGLE_API_KEY"),
-        description="API key for configured LLM provider",
+        description="Generic API key for Gemini, Anthropic, or legacy OpenAI configuration",
+    )
+    openai_api_key: str | None = Field(
+        default=None,
+        min_length=1,
+        validation_alias="OPENAI_API_KEY",
+        description="OpenAI API key for the primary provider",
     )
     llm_model: str | None = Field(
         default=None,
         validation_alias=AliasChoices("LLM_MODEL", "GEMINI_MODEL"),
         description="Model name for configured LLM provider",
+    )
+    llm_reasoning_effort: ReasoningEffort = Field(
+        default=DEFAULT_OPENAI_REASONING_EFFORT,
+        description="OpenAI reasoning effort (ignored by other providers)",
     )
 
     # API Keys
@@ -89,7 +99,19 @@ class Settings(BaseSettings):
     @property
     def google_api_key(self) -> str:
         """Backward-compatible alias for legacy Google API key access."""
-        return self.llm_api_key
+        return self.llm_api_key or ""
+
+    @property
+    def provider_api_key(self) -> str:
+        """Return the credential selected for the configured provider."""
+        api_key = (
+            self.openai_api_key or self.llm_api_key
+            if self.llm_provider == "openai"
+            else self.llm_api_key
+        )
+        if api_key is None:
+            raise RuntimeError("Settings validation did not resolve an API key")
+        return api_key
 
     @property
     def gemini_model(self) -> str:
@@ -114,6 +136,15 @@ class Settings(BaseSettings):
 
         if self.llm_model is None:
             self.llm_model = PROVIDER_DEFAULTS[provider]
+
+        api_key = (
+            self.openai_api_key or self.llm_api_key if provider == "openai" else self.llm_api_key
+        )
+        if api_key is None:
+            required_key = (
+                "OPENAI_API_KEY or LLM_API_KEY" if provider == "openai" else "LLM_API_KEY"
+            )
+            raise ValueError(f"{required_key} is required for provider '{provider}'")
         return self
 
     @model_validator(mode="after")

@@ -14,25 +14,69 @@ def test_settings_supports_legacy_google_api_key_alias(monkeypatch) -> None:
     monkeypatch.setenv("EMAIL_FROM", "from@example.com")
     monkeypatch.setenv("EMAIL_TO", "to@example.com")
 
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.llm_api_key == "legacy-key"
     assert settings.google_api_key == "legacy-key"
 
 
+def test_settings_uses_openai_key_for_openai_provider(monkeypatch) -> None:
+    """OpenAI can authenticate with OPENAI_API_KEY without a generic key."""
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.provider_api_key == "openai-key"
+
+
+def test_settings_keeps_gemini_key_when_openai_key_is_also_present(monkeypatch) -> None:
+    """An OpenAI environment key must not replace Gemini's selected credential."""
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
+    monkeypatch.setenv("LLM_API_KEY", "gemini-key")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.provider_api_key == "gemini-key"
+
+
+def test_settings_accepts_generic_key_as_openai_compatibility_fallback(monkeypatch) -> None:
+    """Existing OpenAI configurations can continue using the generic key name."""
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("LLM_API_KEY", "legacy-openai-key")
+    monkeypatch.setenv("RESEND_API_KEY", "resend-key")
+    monkeypatch.setenv("EMAIL_FROM", "from@example.com")
+    monkeypatch.setenv("EMAIL_TO", "to@example.com")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.provider_api_key == "legacy-openai-key"
+
+
 def test_settings_applies_provider_default_model(monkeypatch) -> None:
     """Provider default model should be applied when LLM_MODEL is omitted."""
-    monkeypatch.setenv("LLM_PROVIDER", "openai")
     monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
     monkeypatch.delenv("LLM_MODEL", raising=False)
     monkeypatch.setenv("RESEND_API_KEY", "resend-key")
     monkeypatch.setenv("EMAIL_FROM", "from@example.com")
     monkeypatch.setenv("EMAIL_TO", "to@example.com")
 
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.llm_provider == "openai"
-    assert settings.llm_model == "gpt-4o-mini"
+    assert settings.llm_model == "gpt-5.6-luna"
+    assert settings.llm_reasoning_effort == "xhigh"
 
 
 def test_get_settings_singleton_uses_new_fields(monkeypatch) -> None:
@@ -65,7 +109,7 @@ def test_ignores_legacy_gemini_model_for_non_gemini_provider(monkeypatch) -> Non
     settings = Settings()
 
     assert settings.llm_provider == "openai"
-    assert settings.llm_model == "gpt-4o-mini"
+    assert settings.llm_model == "gpt-5.6-luna"
 
 
 def test_feed_config_rejects_invalid_feed_url(tmp_path) -> None:
@@ -112,6 +156,7 @@ def test_settings_retry_defaults(monkeypatch) -> None:
 
     assert settings.llm_retries == 2
     assert settings.llm_timeout == 120
+    assert settings.llm_reasoning_effort == "xhigh"
     assert settings.cache_ttl_days == 7
     assert settings.insights_mode == "auto"
     assert settings.insight_min_confidence == 4

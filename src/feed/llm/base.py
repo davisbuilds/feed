@@ -18,6 +18,7 @@ class LLMResponse:
     raw_text: str
     input_tokens: int
     output_tokens: int
+    reasoning_tokens: int = 0
 
 
 class LLMClient(Protocol):

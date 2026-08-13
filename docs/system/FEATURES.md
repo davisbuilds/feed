@@ -59,9 +59,11 @@ Product-surface reference for Feed.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `LLM_PROVIDER` | `gemini` | LLM provider (`gemini`, `openai`, `anthropic`) |
-| `LLM_API_KEY` | (required) | API key for chosen provider |
+| `LLM_PROVIDER` | `openai` | LLM provider (`openai`, `gemini`, `anthropic`) |
+| `OPENAI_API_KEY` | (required for default) | OpenAI credential for the primary provider |
+| `LLM_API_KEY` | (provider-dependent) | Gemini/Anthropic credential and legacy OpenAI fallback |
 | `LLM_MODEL` | per-provider | Model override |
+| `LLM_REASONING_EFFORT` | `xhigh` | OpenAI reasoning effort (`none`, `low`, `medium`, `high`, `xhigh`, `max`) |
 | `RESEND_API_KEY` | (required) | Email delivery API key |
 | `EMAIL_FROM` | (required) | Sender email address |
 | `EMAIL_TO` | (required) | Recipient email address |

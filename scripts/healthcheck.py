@@ -33,7 +33,7 @@ def main() -> int:
             else:
                 issues.append("No articles in database")
 
-    if not settings.llm_api_key:
+    if not settings.provider_api_key:
         issues.append("Missing LLM API key")
 
     if not settings.resend_api_key:

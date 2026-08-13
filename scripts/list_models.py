@@ -7,10 +7,23 @@ def main() -> int:
     """List models for provider if supported."""
     settings = get_settings()
 
-    if settings.llm_provider != "gemini":
+    if settings.llm_provider == "openai":
+        try:
+            from openai import OpenAI
+        except ImportError as exc:
+            print(f"OpenAI SDK is unavailable: {exc}")
+            return 1
+
+        client = OpenAI(api_key=settings.provider_api_key, timeout=settings.llm_timeout)
+        print("Available models:")
+        for model in client.models.list().data:
+            print(f"- {model.id}")
+        return 0
+
+    if settings.llm_provider == "anthropic":
         print(
-            "Model listing is currently implemented only for gemini; "
-            f"current provider is {settings.llm_provider}."
+            "Model listing is not implemented for anthropic; "
+            "use the Anthropic Console to inspect available models."
         )
         return 1
 
@@ -24,7 +37,7 @@ def main() -> int:
         print(f"Import error: {exc}")
         return 1
 
-    client = genai.Client(api_key=settings.llm_api_key)
+    client = genai.Client(api_key=settings.provider_api_key)
     print("Available models:")
     for model in client.models.list():
         if "generateContent" in model.supported_generation_methods:

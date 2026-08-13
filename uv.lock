@@ -366,10 +366,10 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "click" },
     { name = "feedparser" },
-    { name = "google-genai" },
     { name = "httpx" },
     { name = "jinja2" },
     { name = "lxml" },
+    { name = "openai" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dateutil" },
@@ -393,9 +393,6 @@ dev = [
 gemini = [
     { name = "google-genai" },
 ]
-openai = [
-    { name = "openai" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -403,13 +400,12 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.15.0" },
     { name = "click", specifier = ">=8.4.2,<9.0.0" },
     { name = "feedparser", specifier = ">=6.0.14" },
-    { name = "google-genai", specifier = ">=2.16.0" },
     { name = "google-genai", marker = "extra == 'gemini'", specifier = ">=2.16.0" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "jinja2", specifier = ">=3.1.0" },
     { name = "lxml", specifier = ">=6.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.3.0" },
-    { name = "openai", marker = "extra == 'openai'", specifier = ">=2.52.0" },
+    { name = "openai", specifier = ">=2.52.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.6.1" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pydantic-settings", specifier = ">=2.14.2" },
@@ -422,7 +418,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.16.1" },
     { name = "typer", specifier = ">=0.27.0" },
 ]
-provides-extras = ["openai", "anthropic", "gemini", "dev"]
+provides-extras = ["anthropic", "gemini", "dev"]
 
 [[package]]
 name = "feedparser"
