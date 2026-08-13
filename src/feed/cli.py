@@ -225,8 +225,8 @@ def init(
     console.print("\n[bold cyan]LLM Configuration[/bold cyan]")
     provider = typer.prompt(
         "LLM provider",
-        default="gemini",
-        type=typer.Choice(["gemini", "openai", "anthropic"]),
+        default="openai",
+        type=click.Choice(["openai", "gemini", "anthropic"]),
     )
 
     api_key = typer.prompt(

@@ -74,6 +74,28 @@ def test_resolve_feeds_config_path_falls_back_to_project_config(monkeypatch, tmp
     assert cli._resolve_feeds_config_path() == cli.Path("config/feeds.yaml")
 
 
+def test_init_defaults_to_openai_and_writes_openai_key(monkeypatch, tmp_path) -> None:
+    """Fresh setup should use the installed primary provider without extra choices."""
+    import feed.cli as cli
+
+    prompt_calls: list[tuple[str, object | None]] = []
+
+    def fake_prompt(message: str, **kwargs: object) -> str:
+        prompt_calls.append((message, kwargs.get("default")))
+        return "openai" if message == "LLM provider" else "test-openai-key"
+
+    monkeypatch.setattr(cli, "XDG_CONFIG_PATH", tmp_path / "feed")
+    monkeypatch.setattr(cli.typer, "prompt", fake_prompt)
+    monkeypatch.setattr(cli.typer, "confirm", lambda *_args, **_kwargs: False)
+
+    cli.init()
+
+    config_contents = (tmp_path / "feed" / "config.env").read_text()
+    assert prompt_calls[0] == ("LLM provider", "openai")
+    assert "LLM_PROVIDER=openai" in config_contents
+    assert "OPENAI_API_KEY=test-openai-key" in config_contents
+
+
 def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None:
     """Clipboard copy should use the Linux xclip fallback when pbcopy is unavailable."""
     import feed.cli as cli
