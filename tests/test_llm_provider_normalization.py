@@ -18,73 +18,68 @@ def _fresh_import(module_name: str):
 
 
 def test_openai_client_generates_json_and_usage(monkeypatch) -> None:
-    """OpenAI responses should be parsed from message content with usage attached."""
+    """OpenAI Responses output should preserve parsed content and usage."""
     openai_module = ModuleType("openai")
 
-    class FakeCompletions:
+    class FakeResponses:
         def __init__(self) -> None:
             self.kwargs = {}
 
-        def create(self, **kwargs):
+        def parse(self, **kwargs):
             self.kwargs = kwargs
             return SimpleNamespace(
-                choices=[SimpleNamespace(message=SimpleNamespace(content='{"answer": "ok"}'))],
-                usage=SimpleNamespace(prompt_tokens=11, completion_tokens=7),
+                output_parsed=Answer(answer="ok"),
+                output_text='{"answer": "ok"}',
+                usage=SimpleNamespace(
+                    input_tokens=11,
+                    output_tokens=7,
+                    output_tokens_details=SimpleNamespace(reasoning_tokens=3),
+                ),
             )
 
     class FakeOpenAI:
-        def __init__(self, api_key: str) -> None:
+        def __init__(self, api_key: str, timeout: float) -> None:
             self.api_key = api_key
-            self.chat = SimpleNamespace(completions=FakeCompletions())
+            self.timeout = timeout
+            self.responses = FakeResponses()
 
     openai_module.OpenAI = FakeOpenAI
     monkeypatch.setitem(sys.modules, "openai", openai_module)
     module = _fresh_import("feed.llm.openai")
 
-    client = module.OpenAIClient(api_key="key-123", model="model-abc")
+    client = module.OpenAIClient(
+        api_key="key-123",
+        model="gpt-5.6-luna",
+        reasoning_effort="xhigh",
+        timeout=45,
+    )
     response = client.generate("prompt", "system", Answer)
 
     assert response.parsed == {"answer": "ok"}
     assert response.raw_text == '{"answer": "ok"}'
     assert response.input_tokens == 11
     assert response.output_tokens == 7
+    assert response.reasoning_tokens == 3
     assert client.client.api_key == "key-123"
-    assert client.client.chat.completions.kwargs["model"] == "model-abc"
-    assert client.client.chat.completions.kwargs["response_format"]["type"] == "json_schema"
-
-
-def test_openai_text_extraction_accepts_parts_and_missing_message(monkeypatch) -> None:
-    """OpenAI text extraction should support SDK text parts and empty choices."""
-    openai_module = ModuleType("openai")
-    openai_module.OpenAI = object
-    monkeypatch.setitem(sys.modules, "openai", openai_module)
-    module = _fresh_import("feed.llm.openai")
-
-    message = SimpleNamespace(
-        content=[
-            {"type": "text", "text": "first"},
-            SimpleNamespace(text="second"),
-            {"type": "image", "text": "ignored"},
-        ]
-    )
-
-    assert module._extract_openai_text(message) == "first\nsecond"
-    assert module._extract_openai_text(None) == ""
-    assert module._extract_openai_text(SimpleNamespace(content=123)) == "123"
+    assert client.client.timeout == 45
+    assert client.client.responses.kwargs["model"] == "gpt-5.6-luna"
+    assert client.client.responses.kwargs["instructions"] == "system"
+    assert client.client.responses.kwargs["input"] == "prompt"
+    assert client.client.responses.kwargs["text_format"] is Answer
+    assert client.client.responses.kwargs["reasoning"] == {"effort": "xhigh"}
 
 
 def test_openai_client_wraps_invalid_json(monkeypatch) -> None:
-    """Invalid JSON provider responses should raise the shared LLMError."""
+    """Responses without parsed structured output raise the shared LLMError."""
     openai_module = ModuleType("openai")
 
     class FakeOpenAI:
-        def __init__(self, api_key: str) -> None:
-            self.chat = SimpleNamespace(
-                completions=SimpleNamespace(
-                    create=lambda **_kwargs: SimpleNamespace(
-                        choices=[SimpleNamespace(message=SimpleNamespace(content="{bad"))],
-                        usage=None,
-                    )
+        def __init__(self, api_key: str, timeout: float = 120) -> None:
+            self.responses = SimpleNamespace(
+                parse=lambda **_kwargs: SimpleNamespace(
+                    output_parsed=None,
+                    output_text="",
+                    usage=None,
                 )
             )
 
@@ -92,7 +87,7 @@ def test_openai_client_wraps_invalid_json(monkeypatch) -> None:
     monkeypatch.setitem(sys.modules, "openai", openai_module)
     module = _fresh_import("feed.llm.openai")
 
-    with pytest.raises(module.LLMError, match="OpenAI response parsing failed"):
+    with pytest.raises(module.LLMError, match="OpenAI response did not contain structured output"):
         module.OpenAIClient(api_key="key", model="model").generate("prompt", "system", Answer)
 
 

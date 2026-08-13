@@ -49,7 +49,8 @@ CI runtime details:
 
 | Variable | Required For | Used For |
 |----------|--------------|----------|
-| `LLM_API_KEY` or `GOOGLE_API_KEY` | `feed analyze`, `feed run` | LLM provider authentication |
+| `OPENAI_API_KEY` | `feed analyze`, `feed run` with `LLM_PROVIDER=openai` | Primary OpenAI authentication |
+| `LLM_API_KEY` or `GOOGLE_API_KEY` | `feed analyze`, `feed run` with Gemini or Anthropic | Optional-provider authentication (`LLM_API_KEY` is also a legacy OpenAI fallback) |
 | `RESEND_API_KEY` | `feed send`, `feed run --send` | Email delivery via Resend |
 | `EMAIL_FROM` | `feed send`, `feed run --send` | Sender email address |
 | `EMAIL_TO` | `feed send`, `feed run --send` | Recipient email address |
@@ -60,8 +61,9 @@ Terminal-only ingestion/status/cache commands do not need Resend credentials.
 
 | Variable | Default | Used For |
 |----------|---------|----------|
-| `LLM_PROVIDER` | `gemini` | Provider selection (`gemini`, `openai`, `anthropic`) |
+| `LLM_PROVIDER` | `openai` | Provider selection (`openai`, `gemini`, `anthropic`) |
 | `LLM_MODEL` | per-provider | Model override |
+| `LLM_REASONING_EFFORT` | `xhigh` | OpenAI reasoning effort; ignored by Gemini and Anthropic |
 | `CONFIG_DIR` | `config/` | Path to `feeds.yaml` directory |
 | `DATA_DIR` | `data/` | SQLite data directory |
 | `DIGEST_HOUR` | `7` | Hour for scheduled digests (0-23) |
@@ -121,7 +123,8 @@ Utility scripts in `scripts/`:
 | CLI cannot find config | Run `./feed init`, then `./feed config` to inspect active paths. |
 | Edited feeds are ignored | Check whether cwd `.env` changes `CONFIG_DIR`; compare repo `config/feeds.yaml` with `~/.config/feed/feeds.yaml`. |
 | `uv run pytest` fails | Use `uv run python -m pytest`; this repo documents that form as canonical. |
-| LLM provider uses unexpected model | Check `LLM_PROVIDER`, `LLM_MODEL`, and legacy `GEMINI_MODEL` values in both env files. |
+| LLM provider uses unexpected model | Check `LLM_PROVIDER`, `LLM_MODEL`, and `LLM_REASONING_EFFORT` in both env files. For Gemini, also inspect legacy `GEMINI_MODEL`. |
+| OpenAI authentication fails | Confirm `OPENAI_API_KEY` is available to the process. A configured Gemini or Anthropic provider instead uses `LLM_API_KEY` (or Gemini's legacy `GOOGLE_API_KEY`). |
 | Email send fails | Verify `RESEND_API_KEY`, `EMAIL_FROM`, and `EMAIL_TO`; preview rendering with `scripts/preview_email.py` before sending. |
 | Digest repeats old articles | Inspect `LOOKBACK_HOURS`, cache state, and `data/articles.db`. |
 | Scheduler fires at wrong time | Check `DIGEST_TIMEZONE` and generated cron/launchd entry. |

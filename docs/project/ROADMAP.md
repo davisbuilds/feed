@@ -5,7 +5,7 @@ This is a lightweight snapshot, not a release contract.
 ## Completed Highlights
 
 - v0.3.0 pipeline: ingest → analyze → deliver with Rich/text/JSON output.
-- Multi-provider LLM abstraction (Gemini, OpenAI, Anthropic) with structured output.
+- OpenAI-primary LLM abstraction (`gpt-5.6-luna` with `xhigh` reasoning) with optional Gemini and Anthropic providers and structured output.
 - SQLite-backed response cache with 7-day TTL and lazy expiration.
 - Exponential backoff retry wrapper for transient LLM failures.
 - Cron and launchd scheduler backends with `feed schedule`.

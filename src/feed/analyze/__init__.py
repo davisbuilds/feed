@@ -54,7 +54,7 @@ def run_analysis(
     settings = get_settings()
     lookback_hours = lookback_hours or settings.lookback_hours
     provider = settings.llm_provider
-    api_key = settings.llm_api_key
+    api_key = settings.provider_api_key
     model = settings.llm_model
 
     errors: list[str] = []
@@ -96,6 +96,8 @@ def run_analysis(
         api_key=api_key,
         model=model,
         max_retries=settings.llm_retries,
+        reasoning_effort=settings.llm_reasoning_effort,
+        timeout=settings.llm_timeout,
     )
     summarizer = Summarizer(client=llm_client)
     digest_builder = DigestBuilder(

@@ -6,6 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from feed.config import FeedConfig, get_settings
+
 
 def _check_import(module_name: str, errors: list[str], label: str | None = None) -> None:
     """Import a module and print status."""
@@ -48,9 +50,8 @@ def main() -> None:
     _check_import("pydantic", errors)
 
     print("\nChecking configuration...")
+    settings = None
     try:
-        from config import get_settings
-
         settings = get_settings()
         print("✅ Settings loaded")
         print(f"   LLM provider: {settings.llm_provider}")
@@ -62,18 +63,18 @@ def main() -> None:
         errors.append(f"Configuration: {exc}")
 
     print("\nChecking feeds config...")
-    feeds_path = Path("config/feeds.yaml")
+    feeds_path = (
+        settings.config_dir / "feeds.yaml" if settings is not None else Path("config/feeds.yaml")
+    )
     if feeds_path.exists():
         try:
-            from config import FeedConfig
-
             feed_config = FeedConfig(feeds_path)
             urls = feed_config.get_feed_urls()
             print(f"✅ Found {len(urls)} configured feeds")
         except Exception as exc:
             errors.append(f"Feeds config: {exc}")
     else:
-        errors.append("config/feeds.yaml not found")
+        errors.append(f"{feeds_path} not found")
 
     print("\n" + "=" * 50)
     if errors:

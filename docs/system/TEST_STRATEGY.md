@@ -51,9 +51,9 @@ This document outlines the testing strategy for the Substack Digest Agent. It co
 
 ### 3.1 LLM Failure Modes
 
-- **Context Window Exceeded**: Article text larger than Claude's token limit.
+- **Context Window Exceeded**: Article text larger than the selected model's token limit.
   - _Expected_: Truncate content intelligently before sending to API to avoid 400 errors.
-- **API Outages**: 5xx errors from Anthropic.
+- **API Outages**: 5xx errors from OpenAI, Gemini, or Anthropic.
   - _Expected_: Retry with exponential backoff; mark article as 'pending_retry' rather than 'failed'.
 - **Hallucination Checks**: (Manual) Verify summaries don't invent facts.
 
@@ -62,7 +62,7 @@ This document outlines the testing strategy for the Substack Digest Agent. It co
 - **Empty Content**: Article with only an image or title.
   - _Expected_: Skip summarization or generate "Image only post" note.
 - **Non-English Content**: Feeds in other languages.
-  - _Expected_: Claude typically handles this, but prompt should enforce English output.
+  - _Expected_: The selected provider can summarize the source, while the prompt enforces English output.
 
 ## 4. Delivery Layer Testing (Phase 3)
 

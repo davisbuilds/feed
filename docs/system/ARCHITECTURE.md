@@ -3,7 +3,7 @@
 ## High-Level Flow
 
 1. **Ingest**: RSS feeds are fetched concurrently via `httpx` and parsed with `feedparser`.
-2. **Analyze**: Pending articles are summarized by the LLM client (Gemini, OpenAI, or Anthropic) with structured output.
+2. **Analyze**: Pending articles are summarized by the LLM client (OpenAI by default; Gemini or Anthropic optional) with structured output.
 3. **Deliver**: The digest is rendered to terminal (Rich/text/JSON) or sent via email (Resend API + Jinja2 templates).
 
 The full pipeline runs as `feed run`. Individual stages can be invoked separately via `feed ingest`, `feed analyze`, and `feed send`.
@@ -23,17 +23,20 @@ Global options: `--verbose`, `--version`.
 Provider-agnostic design in `src/feed/llm/`:
 
 - `base.py`: `LLMClient` protocol interface + `LLMResponse` dataclass.
-- `gemini.py`, `openai.py`, `anthropic.py`: Provider implementations with structured JSON output.
+- `gemini.py`, `openai.py`, `anthropic.py`: Provider implementations with structured output.
+  OpenAI uses the Responses API and Pydantic parsing; Gemini and Anthropic retain their
+  provider-native structured-output paths.
 - `retry.py`: `RetryClient` wrapper with exponential backoff (retryable: timeouts, 429, 5xx).
-- `__init__.py`: Factory `create_client(provider, api_key, model)` with lazy imports and per-provider defaults.
+- `__init__.py`: Factory `create_client(provider, api_key, model)` with lazy optional-provider
+  imports, per-provider defaults, and OpenAI reasoning/timeout configuration.
 
 Provider defaults:
 
-| Provider | Default Model |
-|----------|--------------|
-| `gemini` | `gemini-3-flash-preview` |
-| `openai` | `gpt-4o-mini` |
-| `anthropic` | `claude-sonnet-4-20250514` |
+| Provider | Default Model | Notes |
+|----------|---------------|-------|
+| `openai` | `gpt-5.6-luna` | Primary provider; `xhigh` reasoning by default. |
+| `gemini` | `gemini-3-flash-preview` | Optional dependency/provider. |
+| `anthropic` | `claude-sonnet-4-20250514` | Optional dependency/provider. |
 
 ## Storage Layer
 

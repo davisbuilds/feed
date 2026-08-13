@@ -50,8 +50,11 @@ class Summarizer:
             settings = get_settings()
             client = create_client(
                 provider=settings.llm_provider,
-                api_key=settings.llm_api_key,
+                api_key=settings.provider_api_key,
                 model=settings.llm_model,
+                max_retries=settings.llm_retries,
+                reasoning_effort=settings.llm_reasoning_effort,
+                timeout=settings.llm_timeout,
             )
 
         self.client = client

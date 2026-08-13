@@ -9,9 +9,18 @@ from feed.llm.retry import RetryClient
 
 
 class _DummyClient:
-    def __init__(self, api_key: str, model: str):
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        *,
+        reasoning_effort: str = "xhigh",
+        timeout: float = 120,
+    ):
         self.api_key = api_key
         self.model = model
+        self.reasoning_effort = reasoning_effort
+        self.timeout = timeout
 
 
 def test_create_client_openai_uses_provider_default(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -25,7 +34,9 @@ def test_create_client_openai_uses_provider_default(monkeypatch: pytest.MonkeyPa
     assert isinstance(client, RetryClient)
     assert isinstance(client.inner, _DummyClient)
     assert client.inner.api_key == "test-key"
-    assert client.inner.model == "gpt-4o-mini"
+    assert client.inner.model == "gpt-5.6-luna"
+    assert client.inner.reasoning_effort == "xhigh"
+    assert client.inner.timeout == 120
 
 
 def test_create_client_anthropic_uses_explicit_model(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -42,10 +53,28 @@ def test_create_client_anthropic_uses_explicit_model(monkeypatch: pytest.MonkeyP
 
 def test_create_client_missing_dependency_raises_llm_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory should wrap dependency import errors as LLMError."""
-    monkeypatch.delitem(__import__("sys").modules, "feed.llm.openai", raising=False)
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.openai", None)
 
     with pytest.raises(LLMError):
         create_client(provider="openai", api_key="test-key")
+
+
+def test_create_client_passes_openai_reasoning_and_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    """OpenAI receives its configured reasoning effort and request timeout."""
+    module = ModuleType("feed.llm.openai")
+    module.OpenAIClient = _DummyClient
+    monkeypatch.setitem(__import__("sys").modules, "feed.llm.openai", module)
+
+    client = create_client(
+        provider="openai",
+        api_key="test-key",
+        reasoning_effort="high",
+        timeout=45,
+    )
+
+    assert isinstance(client.inner, _DummyClient)
+    assert client.inner.reasoning_effort == "high"
+    assert client.inner.timeout == 45
 
 
 def test_create_client_unknown_provider_raises_llm_error() -> None:

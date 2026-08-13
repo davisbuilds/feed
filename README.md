@@ -25,8 +25,8 @@ Do this, in order:
 2. Configure env. Copy `.env.example` to `.env`. Fill values with clearly-labeled
    placeholders for now — do NOT invent real keys. Then tell me which are REQUIRED
    vs OPTIONAL:
-   - REQUIRED to run a real digest: LLM_API_KEY (+ LLM_PROVIDER, defaults to gemini;
-     openai/anthropic also supported).
+   - REQUIRED to run a real digest: OPENAI_API_KEY (the default OpenAI path), or
+     LLM_API_KEY for Gemini, Anthropic, or legacy OpenAI configuration.
    - OPTIONAL, email delivery only: RESEND_API_KEY, EMAIL_FROM, EMAIL_TO.
 
 3. Verify the setup works WITHOUT any secrets. Run `uv run python -m pytest`
@@ -47,7 +47,8 @@ Prefer to do it yourself? The manual steps are below.
 ## What It Does
 
 - Fetches Substack, RSS, and Atom feeds concurrently.
-- Summarizes articles, extracts takeaways, and synthesizes trends with Gemini, OpenAI, or Anthropic.
+- Summarizes articles, extracts takeaways, and synthesizes trends with OpenAI by default;
+  Gemini and Anthropic remain optional providers.
 - Groups updates by feed category for easier reading.
 - Outputs rich terminal text, plain text, JSON, clipboard Markdown, or email via Resend.
 - Stores article metadata, digest records, send state, and LLM cache entries in local SQLite.
@@ -112,9 +113,14 @@ Config is loaded from two env-file locations. Later entries override earlier one
 Minimum real digest config:
 
 ```ini
-LLM_PROVIDER=gemini
-LLM_API_KEY=your_api_key
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your_api_key
+# Defaults: LLM_MODEL=gpt-5.6-luna, LLM_REASONING_EFFORT=xhigh
 ```
+
+To use an optional provider, set `LLM_PROVIDER=gemini` or `LLM_PROVIDER=anthropic`
+and provide its credential as `LLM_API_KEY`. Gemini also accepts the legacy
+`GOOGLE_API_KEY` alias.
 
 Email delivery with `feed run --send` also requires:
 
