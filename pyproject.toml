@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "openai>=2.52.0",          # Primary LLM provider
     "feedparser>=6.0.14",      # RSS parsing
-    "resend>=2.43.0",          # Email delivery
+    "resend>=2.44.0",          # Email delivery
     "httpx>=0.27.0",          # HTTP client (used by anthropic)
     "beautifulsoup4>=4.15.0", # HTML parsing
     "lxml>=6.1.3",            # Fast HTML/XML parser
@@ -28,11 +28,11 @@ dependencies = [
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.120.2"]
-gemini = ["google-genai>=2.22.0"]
+gemini = ["google-genai>=2.23.0"]
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
-    "ruff>=0.16.6",
+    "ruff>=0.16.7",
     "mypy>=2.3.1",
     "pre-commit>=4.6.2",
 ]
