@@ -65,9 +65,14 @@ Quality gates before merge:
 - `uv run python -m pytest`
 - PR commit-subject classification and locked dependency installation.
 
-## Current Limitation
+## Current Protection State
 
-`main` branch protection is not enabled because GitHub returned `403` for branch protection APIs on this private repository tier. Until upgraded, enforce checks and review discipline by team convention.
+On September 26, 2026, `gh api repos/davisbuilds/feed --jq .visibility`
+returned `public`, and `gh api repos/davisbuilds/feed/branches/main/protection`
+returned HTTP 404, `Branch not protected`. This observation does not establish
+why protection is absent or whether other rules apply. The CI gates and review
+discipline above remain the repository's merge policy; re-query protection
+before relying on server enforcement.
 
 ## Recommended Ongoing Hygiene
 
@@ -75,9 +80,8 @@ Quality gates before merge:
 2. Open PRs early; keep them focused.
 3. Tidy your PR commit history *before* merging — reword/squash locally so what lands on `main` reads cleanly.
 4. Pick **Create a merge commit** by default; pick **Rebase and merge** when linear history is materially better.
-5. Periodically prune local branches:
-
-```bash
-git fetch --prune
-git branch --merged main | grep -v ' main$' | xargs -n 1 git branch -d
-```
+5. Refresh remote refs with `git fetch --prune`, then inspect `git worktree list`
+   and candidate branch history before local cleanup. Preserve branches used by
+   active worktrees or concurrent work. Delete only an individually verified,
+   completed branch with `git branch -d BRANCH`; do not force-delete unmerged
+   work or run a blanket deletion pipeline.
