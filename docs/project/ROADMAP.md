@@ -13,6 +13,9 @@ This is a lightweight snapshot, not a release contract.
 - Email delivery via Resend API with Jinja2 HTML + plain text templates.
 - XDG config convention for run-anywhere CLI usage.
 - CI pipeline with ruff linting and pytest on PR/push to main.
+- Release Please configuration for reviewed version/changelog PRs and GitHub
+  tags/releases after successful main CI; App activation is documented in
+  `docs/system/OPERATIONS.md`.
 
 ## Planned / Open Areas
 
