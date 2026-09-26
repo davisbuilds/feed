@@ -1,6 +1,7 @@
 """Tests for CLI helper behavior."""
 
 from datetime import UTC, datetime
+from importlib.metadata import version
 from types import SimpleNamespace
 
 import pytest
@@ -43,7 +44,7 @@ def test_version_callback_prints_version_and_exits(capsys) -> None:
     with pytest.raises(typer.Exit):
         cli.version_callback(True)
 
-    assert "Feed CLI v" in capsys.readouterr().out
+    assert capsys.readouterr().out.strip() == f"Feed CLI v{version('feed')}"
 
 
 def test_version_callback_ignores_false_value(capsys) -> None:

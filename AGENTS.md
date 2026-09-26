@@ -46,6 +46,10 @@ Ruff handles modern-Python style: `datetime.UTC` over `timezone.utc` (UP017), `c
 
 ## Working Agreement
 
+- **Classify commits for releases.** Use Conventional Commit subjects for each
+  non-merge commit, with `!` or a `BREAKING CHANGE:` footer for incompatible
+  behavior. See `docs/project/GIT_HISTORY_POLICY.md` for bump rules; PR titles
+  do not replace classification of the preserved commits.
 - **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
 - **Keep docs current.** After a significant change, PR, or completed spec/plan, update any now-stale reference docs under `docs/system/` (and `docs/project/ROADMAP.md`) so they match shipped behavior. Skip this for trivial changes.
 - **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.

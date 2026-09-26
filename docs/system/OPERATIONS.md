@@ -41,7 +41,42 @@ Jobs:
 CI runtime details:
 
 - Python 3.12
-- uv with `uv sync --extra dev`
+- uv with `uv sync --locked --extra dev` (fails on lockfile drift)
+- PR non-merge commit subjects must use the classification in
+  `docs/project/GIT_HISTORY_POLICY.md`; CI checks the actual commits.
+
+## Versioning And Releases
+
+`pyproject.toml` is the authoritative package version. `feed --version` reads
+installed distribution metadata, so local editable installs and built wheels
+report the same version as their package metadata.
+
+`.github/workflows/release-please.yml` runs after successful `CI` on a push to
+`main`. It checks that the tested SHA is still the current `main` SHA and skips
+superseded runs. The privileged job executes no checked-out code or artifacts.
+Release Please opens or updates a release PR containing `pyproject.toml`,
+`uv.lock`, `.release-please-manifest.json`, and generated `CHANGELOG.md` changes.
+After that PR is reviewed, merged, and passes main CI, it creates a `vX.Y.Z` tag
+and GitHub release. This workflow does not publish to PyPI or attach packages.
+
+The manifest starts at the existing `0.3.0` version. `bootstrap-sha` bounds the
+first release's history to changes after the last main commit before automation;
+it is ignored after the first Release Please release. Earlier changes are not
+reconstructed into a changelog. Bump and commit classification rules live in
+`docs/project/GIT_HISTORY_POLICY.md`.
+
+Activation requires a GitHub App installed on this repository with **Contents**,
+**Issues**, and **Pull requests** write permissions. Configure repository variable
+`RELEASE_APP_CLIENT_ID` and secret `RELEASE_APP_PRIVATE_KEY`. The workflow mints
+a short-lived token restricted to this repository and those permissions; the
+token action revokes it when the job finishes. Missing App configuration fails
+the release job. No credential is stored in source.
+
+App-authored release PRs trigger ordinary PR CI without the approval requirement
+for `GITHUB_TOKEN`-authored PR events. The App needs no Actions or Administration
+write permission. Before merging the first release PR, verify that its CI and
+review gates actually ran. Do not manually change the manifest outside bootstrap
+or intentional release recovery.
 
 ## Environment Variables
 
