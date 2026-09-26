@@ -3,7 +3,7 @@
 Personal newsletter intelligence CLI. Feed fetches RSS/Atom/Substack feeds, summarizes
 new articles with an LLM, and delivers a digest to the terminal, clipboard, or email.
 
-Current CLI version: `v0.3.0`.
+Check your installed CLI version with `feed --version`.
 
 ## Agent Setup
 
