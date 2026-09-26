@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
+from importlib.metadata import version as package_version
 from pathlib import Path
 
 import click
@@ -59,7 +60,7 @@ FormatChoice = typer.Option(
     help="Output format: rich (terminal), text (plain), or json",
 )
 
-__version__ = "0.3.0"
+__version__ = package_version("feed")
 
 console = Console()
 DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parent.parent
