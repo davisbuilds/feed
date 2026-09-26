@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.1](https://github.com/davisbuilds/feed/compare/v0.3.0...v0.3.1) (2026-09-26)
+## [0.3.1](https://github.com/davisbuilds/feed/compare/3461c4023b0b3dd873bc012b232abee940331ce7...v0.3.1) (2026-09-26)
 
 
 ### Bug Fixes
