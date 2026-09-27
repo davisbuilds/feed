@@ -1,23 +1,19 @@
 # Roadmap
 
-This is a lightweight snapshot, not a release contract.
+feed is a CLI for turning subscribed feeds into digests delivered to the terminal
+or email. The current product path remains ingest → analyze → deliver, with local
+configuration, caching, and optional scheduling. [Features](../system/FEATURES.md)
+and [Operations](../system/OPERATIONS.md) own the current command and provider
+contracts.
 
-## Completed Highlights
+## Current Direction
 
-- v0.3.0 pipeline: ingest → analyze → deliver with Rich/text/JSON output.
-- OpenAI-primary LLM abstraction (`gpt-5.6-luna` with `xhigh` reasoning) with optional Gemini and Anthropic providers and structured output.
-- SQLite-backed response cache with 7-day TTL and lazy expiration.
-- Exponential backoff retry wrapper for transient LLM failures.
-- Cron and launchd scheduler backends with `feed schedule`.
-- Feed diagnostics (`feed test`) with URL validation and parser health checks.
-- Email delivery via Resend API with Jinja2 HTML + plain text templates.
-- XDG config convention for run-anywhere CLI usage.
-- CI pipeline with ruff linting and pytest on PR/push to main, plus retained
-  commit classification and complete unreleased-history validation before releases.
-- Release Please configuration for reviewed version/changelog PRs and GitHub
-  tags/releases after successful main CI; App activation is documented in
-  `docs/system/OPERATIONS.md`.
+Keep the pipeline usable from any working directory and preserve the provider
+abstraction: OpenAI is the configured default, with Gemini and Anthropic optional.
+Changes to provider behavior or delivery should preserve the shared analysis/output
+contract and be verified at the relevant stage. The completed OpenAI-primary plan
+is retained for its decision context, not an active work queue.
 
-## Planned / Open Areas
-
-- See `docs/plans/` for active planning documents.
+No next feature is selected in this Roadmap. [Backlog](BACKLOG.md) holds durable
+unresolved gaps when discovered. Released consumer changes and compatibility live
+in [CHANGELOG.md](../../CHANGELOG.md); Git and PRs retain routine delivery history.

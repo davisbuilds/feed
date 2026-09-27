@@ -160,7 +160,7 @@ docs/                system, project, and plan docs
 - Feature and CLI reference: [docs/system/FEATURES.md](docs/system/FEATURES.md)
 - Runtime operations, env vars, scripts, and troubleshooting: [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
 - Product roadmap snapshot: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
-- Testing strategy: [docs/plans/TEST_PLAN.md](docs/plans/TEST_PLAN.md)
+- Testing strategy: [docs/system/TEST_STRATEGY.md](docs/system/TEST_STRATEGY.md)
 - Git history and branch policy: [docs/project/GIT_HISTORY_POLICY.md](docs/project/GIT_HISTORY_POLICY.md)
 - Contributor workflow and PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
 
