@@ -43,7 +43,15 @@ CI runtime details:
 - Python 3.12
 - uv with `uv sync --locked --extra dev` (fails on lockfile drift)
 - PR non-merge commit subjects must use the classification in
-  `docs/project/GIT_HISTORY_POLICY.md`; CI checks the actual commits.
+  `docs/project/GIT_HISTORY_POLICY.md`; CI checks the actual PR range.
+- Main pushes must have a nonempty forward `before..after` range of available
+  commits. CI classifies that range plus the complete unreleased history after
+  the real tag matching the manifest version, or bootstrap if that tag is absent.
+  Missing/invalid metadata or revisions, zero revisions, and non-forward history
+  fail closed. An empty unreleased range at a real tagged head is legitimate.
+  The release scan has no fixed commit-count limit; real tags bound future scans.
+  If a release PR updates the manifest before its tag exists, bootstrap fallback
+  checks a broader range conservatively.
 
 ## Versioning And Releases
 
@@ -59,10 +67,14 @@ Release Please opens or updates a release PR containing `pyproject.toml`,
 After that PR is reviewed, merged, and passes main CI, it creates a `vX.Y.Z` tag
 and GitHub release. This workflow does not publish to PyPI or attach packages.
 
-The manifest starts at the existing `0.3.0` version. `bootstrap-sha` bounds the
-first release's history to changes after the last main commit before automation;
-it is ignored after the first Release Please release. Earlier changes are not
-reconstructed into a changelog. Bump and commit classification rules live in
+The actual package/manifest version is `0.3.1`, with published tag `v0.3.1` at
+`cf241844644c0b3d7624775118818087236c4032`. The initial unreleased metadata
+baseline was `0.3.0`; no fictional `v0.3.0` tag was created. `bootstrap-sha`
+remains `3461c4023b0b3dd873bc012b232abee940331ce7`, the last main commit
+before automation. Release Please uses real release boundaries after its first
+release; the classification gate uses bootstrap conservatively whenever the
+exact manifest-version tag is absent. Earlier changes are not reconstructed
+into a changelog. Bump and commit classification rules live in
 `docs/project/GIT_HISTORY_POLICY.md`.
 
 Activation requires a GitHub App installed on this repository with **Contents**,
@@ -77,6 +89,20 @@ for `GITHUB_TOKEN`-authored PR events. The App needs no Actions or Administratio
 write permission. Before merging the first release PR, verify that its CI and
 review gates actually ran. Do not manually change the manifest outside bootstrap
 or intentional release recovery.
+
+If an unclassified commit has already landed on main, keep release writes paused.
+A later valid push or retry cannot clear that invalid unreleased commit. Inspect
+the entire unreleased range and compatibility intent. The owner must approve
+any recovery boundary or classification exception in a separately reviewed
+change, with release notes accounting for every skipped consumer change. Do not
+silently advance bootstrap, create a fictitious tag, or rewrite published history.
+
+Local release-gate checks from the repository root:
+
+```bash
+python3 scripts/check_commit_subjects.py origin/main
+python3 scripts/check_commit_subjects.py --unreleased HEAD
+```
 
 ## Environment Variables
 

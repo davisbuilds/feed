@@ -1,6 +1,6 @@
 # Git History and Branch Hygiene
 
-Last updated: September 26, 2026
+Last updated: September 27, 2026
 
 ## Repository Merge Settings
 
@@ -31,8 +31,14 @@ Merge commits and rebase merges are both allowed; squash merges are disabled.
 ## Commit Classification And Versioning
 
 Use `type(scope): description` (scope optional) for each non-merge commit. CI
-checks subjects on PRs because preserved commits, rather than just the PR title,
-feed Release Please. Choose the type from the actual user-visible impact:
+checks the actual PR range because preserved commits, rather than just the PR
+title, feed Release Please. Main CI also checks the current push's actual
+`before..after` range and the complete unreleased non-merge history after the
+matching real manifest-version tag, or bootstrap when that tag is absent.
+Missing, zero, unavailable, empty push, and non-forward revisions fail closed.
+A later valid main push cannot erase an earlier invalid unreleased commit whose
+CI failed. Preserve published history; see Operations for owner-reviewed recovery.
+Choose the type from the actual user-visible impact:
 
 | Change | Subject | Before 1.0 | At/after 1.0 |
 | --- | --- | --- | --- |
@@ -63,7 +69,8 @@ Quality gates before merge:
 - `uv run ruff check .`
 - `uv run ruff format --check .`
 - `uv run python -m pytest`
-- PR commit-subject classification and locked dependency installation.
+- PR/main-push commit classification, complete unreleased-history validation,
+  and locked dependency installation.
 
 ## Current Protection State
 
