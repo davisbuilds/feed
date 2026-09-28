@@ -4,11 +4,12 @@
 
 ## Documentation Map
 
+- `CONTRIBUTING.md` — contribution scope, review expectations, and delivery policy.
 - `docs/system/ARCHITECTURE.md` — pipeline flow, CLI layer, LLM abstraction (provider defaults), storage tables, cache, scheduler backends, directory map.
 - `docs/system/FEATURES.md` — full CLI command reference, config variables, ingestion/analysis/delivery features, scheduling, cache.
 - `docs/system/OPERATIONS.md` — local dev, command list, CI/local verification, env vars, XDG paths, scripts catalog, local data/privacy, recovery/troubleshooting.
 - `docs/system/TEST_STRATEGY.md` — test plan and strategy: ingestion/analysis/delivery edge cases, security validation, and performance benchmarks.
-- `docs/project/ROADMAP.md` — shipped highlights and pointers to active plans under `docs/plans/`.
+- `docs/project/ROADMAP.md` — current direction and product boundaries.
 - `docs/project/GIT_HISTORY_POLICY.md` — history conventions.
 
 ## Command Quickstart
@@ -51,7 +52,14 @@ Ruff handles modern-Python style: `datetime.UTC` over `timezone.utc` (UP017), `c
   behavior. See `docs/project/GIT_HISTORY_POLICY.md` for bump rules; PR titles
   do not replace classification of the preserved commits.
 - **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
-- **Keep docs current.** After a significant change, PR, or completed spec/plan, update any now-stale reference docs under `docs/system/` (and `docs/project/ROADMAP.md`) so they match shipped behavior. Skip this for trivial changes.
+- **Keep docs current.** Update the owning reference when a change makes its contract, boundary, procedure, or direction inaccurate. Routine internal changes need no ceremonial doc edit.
 - **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
-- **Log durable follow-ups in `BACKLOG.md`.** Note design gaps, tech debt, or better approaches you spot mid-task in `docs/project/BACKLOG.md`; fix simple, quick, or blocking issues inline and call them out. Add an item only for recurring friction, meaningful risk/cost, an unresolved decision, or a concrete trigger. Record **What / Why or evidence / Next or Revisit when**; keep the backlog future-only, use the capability-owning repository as canonical for cross-repo work, date/source volatile claims (or label a hypothesis), and move shipped work to `docs/project/ROADMAP.md`. Review after a significant shipped slice or at least quarterly.
+- **Log durable follow-ups in `BACKLOG.md`.** Capture consequential design gaps,
+  tech debt, and better approaches in `docs/project/BACKLOG.md`; fix small or
+  blocking issues inline. Keep entries future-only, with evidence and a next step
+  or revisit trigger; date/source volatile claims or label hypotheses. The
+  capability-owning repo holds cross-repo detail. Agents can work directly from
+  entries; use issues for discussion or coordination with one detailed owner.
+  Reconcile affected entries as work lands; update `ROADMAP.md` when selected
+  direction changes, not as a shipment log.
 - **Re-ground after compaction.** A compaction summary loses precise paths, context, and verification state — before continuing, re-read this project's `AGENTS.md`, its reference docs, and recent commits.

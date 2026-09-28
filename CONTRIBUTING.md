@@ -1,58 +1,45 @@
 # Contributing
 
-This repository uses a squash-merge workflow to keep `main` history clean and readable.
+## Welcome and scope
 
-## Workflow
+Bug reports, focused fixes, documentation improvements, and supported proposals
+are welcome. Discuss substantial provider, delivery-pipeline, dependency, or public
+CLI/configuration changes before major implementation.
 
-1. Sync local `main`.
-2. Create a feature branch from `main`.
-3. Make focused changes and commit normally.
-4. Push branch and open a pull request.
-5. Merge with **Squash and merge** after CI passes.
-6. Let GitHub auto-delete the merged remote branch.
-7. Prune merged local branches periodically.
+This is a solo-maintained project; contributions do not imply a support or
+response-time commitment.
 
-## Branch Naming
+## Understanding and agent use
 
-Use descriptive prefixes:
+Agent-assisted work is welcome. Submitters should understand the change's purpose,
+important behavior, tradeoffs, and verification limits. Explain what you checked
+and what remains uncertain; no prompt transcript or manual rewrite is required.
 
-- `feat/<name>`
-- `fix/<name>`
-- `chore/<name>`
-- `docs/<name>`
+## Choosing work
 
-## Commit Guidance
+[Roadmap](docs/project/ROADMAP.md) records selected direction;
+[Backlog](docs/project/BACKLOG.md) records unresolved work. Backlog entries can be
+delegated directly to agents or become focused PRs. Use an issue when persistent
+discussion, investigation, or coordination helps; there is no mandatory graduation
+step. An entry or issue alone is not a feature commitment. When an issue owns the
+details, keep only a useful linked summary in the backlog.
 
-- Keep commits logical and atomic while working on the branch.
-- Use clear, imperative commit messages.
-- It is fine to have multiple commits in one PR; squash merge will combine them on `main`.
+## Delivering a change
 
-## Pull Request Expectations
+Work on a focused branch from `main` (or an appropriate parent for stacked work).
+Keep commits coherent. Describe the problem and resulting behavior in the PR,
+with relevant verification and limitations. Merge after applicable checks pass
+and review conversations are resolved.
 
-- Keep PR scope tight (one objective per PR).
-- Include a short summary and test evidence.
-- Ensure CI passes before merge:
-  - `uv run ruff check .`
-  - `uv run python -m pytest`
+[Operations](docs/system/OPERATIONS.md) owns setup and checks.
+[Git policy](docs/project/GIT_HISTORY_POLICY.md) owns merge/rebase policy: squash
+is disabled, and each retained non-merge commit needs a Conventional Commit subject.
+Use `!` or a `BREAKING CHANGE:` footer for incompatible CLI/configuration/output
+changes and describe migration.
 
-CI is configured in `.github/workflows/`.
+Release Please drafts `CHANGELOG.md`; review consumer meaning, compatibility,
+and migration steps in the release PR instead of maintaining a parallel log.
+GitHub releases do not publish to PyPI.
 
-## Local Branch Cleanup
-
-Run periodically:
-
-```bash
-git fetch --prune
-git branch --merged main | grep -v ' main$' | xargs -n 1 git branch -d
-```
-
-## Documentation Hygiene
-
-- Do not hardcode volatile counts in docs.
-- Prefer executable source-of-truth references (for example, `uv run python -m pytest`, `.github/workflows/`).
-
-## Related Docs
-
-- Git history and branch hygiene config: `docs/project/GIT_HISTORY_POLICY.md`
-- Agent implementation guidance: `AGENTS.md`
-- Project onboarding: `README.md`
+Update the owning reference when its claims change and reconcile affected backlog
+entries. Roadmap tracks direction; Git and PRs hold routine delivery history.

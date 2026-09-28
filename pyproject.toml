@@ -8,6 +8,8 @@ version = "0.3.1"
 description = "Your newsletter digest CLI"
 authors = [{name = "davisbuilds"}]
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "openai>=3.13.0",          # Primary LLM provider

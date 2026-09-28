@@ -160,7 +160,7 @@ docs/                system, project, and plan docs
 - Feature and CLI reference: [docs/system/FEATURES.md](docs/system/FEATURES.md)
 - Runtime operations, env vars, scripts, and troubleshooting: [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
 - Product roadmap snapshot: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
-- Testing strategy: [docs/plans/TEST_PLAN.md](docs/plans/TEST_PLAN.md)
+- Testing strategy: [docs/system/TEST_STRATEGY.md](docs/system/TEST_STRATEGY.md)
 - Git history and branch policy: [docs/project/GIT_HISTORY_POLICY.md](docs/project/GIT_HISTORY_POLICY.md)
 - Contributor workflow and PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
 
@@ -170,3 +170,7 @@ docs/                system, project, and plan docs
 - Email delivery is optional and requires Resend credentials plus a verified sender domain.
 - `uv run python -m pytest` is the canonical test command; do not use `uv run pytest`.
 - The active feeds file is config-dependent. Always check `feed config` before editing a user's subscriptions.
+
+## License
+
+[MIT](LICENSE). Third-party material retains its own notices and license terms.
