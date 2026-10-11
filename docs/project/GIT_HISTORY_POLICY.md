@@ -72,14 +72,20 @@ Quality gates before merge:
 - PR/main-push commit classification, complete unreleased-history validation,
   and locked dependency installation.
 
-## Current Protection State
+## Branch Protection
 
-On September 26, 2026, `gh api repos/davisbuilds/feed --jq .visibility`
-returned `public`, and `gh api repos/davisbuilds/feed/branches/main/protection`
-returned HTTP 404, `Branch not protected`. This observation does not establish
-why protection is absent or whether other rules apply. The CI gates and review
-discipline above remain the repository's merge policy; re-query protection
-before relying on server enforcement.
+Verified 2026-10-11 with
+`gh api repos/davisbuilds/feed/branches/main/protection`:
+`main` requires these GitHub Actions checks before merge:
+
+- `Lint & dead code` (CI)
+- `Test (pytest)` (CI)
+- `check` (Publication Hygiene)
+
+Branches need not be up to date with `main`, no reviews are required, and admins
+are not enforced. Required checks match job names, so rename a job and its entry
+in the protection rule together. `Workflow Security Audit` is path-filtered and
+deliberately not required: a required check that never runs blocks every merge.
 
 ## Recommended Ongoing Hygiene
 
