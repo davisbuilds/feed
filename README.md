@@ -18,7 +18,8 @@ to the terminal or email.
 
 Do this, in order:
 
-1. Install deps. Ensure `uv` is installed (https://astral.sh/uv); then run `uv sync`
+1. Install deps. Ensure `uv` 0.9.17 or later is installed (https://astral.sh/uv;
+   the 7-day `exclude-newer` release quarantine needs it); then run `uv sync`
    from the repo root. If we're not in the repo yet, clone
    https://github.com/davisbuilds/feed.git and cd into it first.
 
