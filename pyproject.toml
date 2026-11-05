@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-anthropic = ["anthropic>=1.17.0"]
+anthropic = ["anthropic>=2.3.0"]
 gemini = ["google-genai>=2.32.0"]
 dev = [
     "pytest>=9.1.1",
