@@ -47,6 +47,15 @@ Ruff handles modern-Python style: `datetime.UTC` over `timezone.utc` (UP017), `c
 
 ## Working Agreement
 
+- **Plan and hand off work.** Use the accepted conversation or task as the
+  contract when it gives enough detail. Save a design, spec, or plan when it
+  helps people coordinate, agree on acceptance criteria, or sequence execution.
+  For unfinished work changing agents, sessions, or devices, leave a concise
+  handoff when the receiving context is incomplete. Commit audience-appropriate
+  documents needed for shared execution and keep their status current.
+  Before retiring execution docs, preserve lasting decisions and open work in
+  maintained references and repair incoming links.
+  Archive reviewed completed execution docs in the ignored `docs/archive/`.
 - **Classify commits for releases.** Use Conventional Commit subjects for each
   non-merge commit, with `!` or a `BREAKING CHANGE:` footer for incompatible
   behavior. See `docs/project/GIT_HISTORY_POLICY.md` for bump rules; PR titles
