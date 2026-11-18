@@ -1,71 +1,73 @@
 # AGENTS.md
 
-`feed` is a newsletter intelligence CLI that fetches RSS feeds, generates AI-powered digests, and delivers them via email/terminal.
+`feed` is a newsletter intelligence CLI that fetches RSS feeds, generates
+AI-powered digests, and delivers them by email or terminal. `./feed --help`
+lists commands (`./feed` wraps `uv run feed`).
 
 ## Documentation Map
 
-- `CONTRIBUTING.md` — contribution scope, review expectations, and delivery policy.
-- `docs/system/ARCHITECTURE.md` — pipeline flow, CLI layer, LLM abstraction (provider defaults), storage tables, cache, scheduler backends, directory map.
-- `docs/system/FEATURES.md` — full CLI command reference, config variables, ingestion/analysis/delivery features, scheduling, cache.
-- `docs/system/OPERATIONS.md` — local dev, command list, CI/local verification, env vars, XDG paths, scripts catalog, local data/privacy, recovery/troubleshooting.
-- `docs/system/TEST_STRATEGY.md` — test plan and strategy: ingestion/analysis/delivery edge cases, security validation, and performance benchmarks.
-- `docs/project/ROADMAP.md` — current direction and product boundaries.
-- `docs/project/GIT_HISTORY_POLICY.md` — history conventions.
-
-## Command Quickstart
-
-```bash
-uv sync --extra dev
-./feed --help      # list all available CLI commands
-./feed init        # interactive setup
-./feed run         # full pipeline
-```
+- `CONTRIBUTING.md` — contribution scope, review expectations, and delivery.
+- `docs/system/ARCHITECTURE.md` — pipeline, CLI layer, LLM provider defaults, storage, cache, schedulers.
+- `docs/system/FEATURES.md` — CLI command reference, config variables, features.
+- `docs/system/OPERATIONS.md` — local dev, CI and local verification, env vars, XDG paths, scripts, privacy, recovery.
+- `docs/system/TEST_STRATEGY.md` — test plan: edge cases, security validation, benchmarks.
+- `docs/project/ROADMAP.md`, `docs/project/BACKLOG.md`.
+- `docs/project/GIT_HISTORY_POLICY.md` — merge strategy and commit classification for releases.
 
 ## Runtime Configuration Gotchas
 
-Settings load via Pydantic Settings from two env-file locations (cwd `.env` overrides XDG):
+Settings load through Pydantic Settings from `~/.config/feed/config.env` (XDG,
+written by `feed init`), overridden by a `.env` in the current directory.
 
-1. `~/.config/feed/config.env` — user-level XDG config (created by `feed init`).
-2. `.env` in current working directory — project-level override.
-
-The `feed init` wizard writes `config.env` and copies `feeds.yaml` into the XDG dir, so users can run `feed` from any location.
-
-- **Do not assume `config/feeds.yaml` is the active feed file.** Active path is `settings.config_dir / "feeds.yaml"` and `settings.config_dir` is driven by env resolution.
-- Before editing feed configuration for a user, verify active paths with `feed config` (or `feed config --json` for machine-readable output).
-- When users ask to "standardize" feeds, compare and sync both `config/feeds.yaml` and `~/.config/feed/feeds.yaml` as requested — neither is automatically authoritative.
-- **Run tests with `uv run python -m pytest`**, not `uv run pytest` (the latter fails with "No such file or directory").
+- **Do not assume `config/feeds.yaml` is the active feed file.** The active file
+  is `settings.config_dir / "feeds.yaml"`, and `config_dir` follows env
+  resolution. Check `feed config` (or `--json`) before editing a user's feeds.
+- When asked to "standardize" feeds, compare and sync both `config/feeds.yaml`
+  and `~/.config/feed/feeds.yaml` as requested; neither is automatically
+  authoritative.
 
 ## Testing
 
-- **Pre-push** (matches CI `.github/workflows/ci.yml`): `uv run ruff check .`, `uv run ruff format --check .`, and `uv run python -m pytest`.
-- **TDD**: red/green for new features, major refactors, and large changes. The red step must fail for the behavior you're about to fix — a test that fails only because the symbol doesn't exist yet is a stub, not a red test; write the signature first, then a test that fails on the behavior. Skip the red step for code with no behavior to assert, and cover it after. For smaller edits, still run the relevant existing tests before wrapping up.
-- **Dead-code gate** (`tests/test_dead_code.py`): static checks for unused public symbols, orphaned modules, and unreachable code. Out-of-package consumers (`scripts/`) and Jinja `templates/` are part of its reference corpus. It owns cross-file dead code; ruff `F`/`ERA` own within-file unused imports/locals and commented-out code. When a symbol/module is intentionally unreferenced (external API, framework-invoked), add it to `SYMBOL_EXCEPTIONS`/`MODULE_EXCEPTIONS` with a reason rather than silencing the test.
-
-## Conventions Enforced Elsewhere
-
-Ruff handles modern-Python style: `datetime.UTC` over `timezone.utc` (UP017), `collections.abc` imports (UP035), import ordering (I001), forward-ref hints via `from __future__ import annotations` + `TYPE_CHECKING`. Don't restate these here — fix any violations the linter flags.
+- **Local gate** (matches the required `Lint & dead code`, `Test (pytest)`, and
+  `check` checks):
+  `uv sync --locked --extra dev && uv run ruff check . && uv run ruff format --check . && uv run python -m pytest -q && python3 scripts/check_publication_hygiene.py`.
+  CI also classifies every non-merge commit subject on the branch:
+  `python3 scripts/check_commit_subjects.py origin/main` (it refuses an empty range).
+  For workflow changes, also run `uvx zizmor@1.30.0 --offline .github/workflows/`.
+- **Dead-code gate** (`tests/test_dead_code.py`) owns cross-file dead code; ruff
+  `F`/`ERA` own within-file unused code. `scripts/` and the Jinja templates
+  (`src/feed/deliver/templates/`) count as references. For an intentionally unreferenced symbol or module (external
+  API, framework-invoked), add it to `SYMBOL_EXCEPTIONS`/`MODULE_EXCEPTIONS` with
+  a reason rather than silencing the test.
+- Ruff owns modern-Python style; fix what it flags.
 
 ## Working Agreement
 
-- **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
-- **Log durable follow-ups in `BACKLOG.md`.** Capture consequential design gaps,
-  tech debt, and better approaches in `docs/project/BACKLOG.md`; fix small or
-  blocking issues inline. Keep entries future-only, with evidence and a next step
-  or revisit trigger; date/source volatile claims or label hypotheses. The
-  capability-owning repo holds cross-repo detail. Agents can work directly from
-  entries; use issues for discussion or coordination with one detailed owner.
-  Reconcile affected entries as work lands; update `ROADMAP.md` when selected
-  direction changes, not as a shipment log.
-- **Keep docs current.** Update the owning reference when a change makes its contract, boundary, procedure, or direction inaccurate. Routine internal changes need no ceremonial doc edit.
+- **Clarify before building** when a request is vague, contradictory, or skips a
+  key decision; clear, well-scoped requests need no interview.
+- **Fix small issues now; backlog the rest.** Fix simple, quick, or blocking
+  issues in this repo as part of the current change and call them out. Record in
+  `docs/project/BACKLOG.md` only what can't be finished now or needs the
+  maintainer's decision; don't open a branch or PR just for a backlog entry.
+- **Keep docs current** when a change makes a documented contract, boundary,
+  procedure, or direction stale.
 - **Plan and hand off work.** Reuse clear task context. Save planning docs when
-  decisions, acceptance, or coordination need persistence. Leave a brief
-  handoff only when needed to resume unfinished work. Commit shared docs and
-  keep status current. Before archiving reviewed, completed docs in ignored
-  `docs/archive/`, preserve lasting decisions and open work in maintained docs
-  and repair links.
-- **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
-- **Classify commits for releases.** Use Conventional Commit subjects for each
-  non-merge commit, with `!` or a `BREAKING CHANGE:` footer for incompatible
-  behavior. See `docs/project/GIT_HISTORY_POLICY.md` for bump rules; PR titles
-  do not replace classification of the preserved commits.
-- **Re-ground after compaction.** A compaction summary loses precise paths, context, and verification state — before continuing, re-read this project's `AGENTS.md`, its reference docs, and recent commits.
+  decisions, acceptance, or coordination need persistence, and leave a brief
+  handoff only when needed to resume unfinished work. Commit shared docs and keep
+  status current. `docs/archive/` is gitignored: before archiving a completed doc
+  there, preserve lasting decisions and open work in maintained docs and repair
+  links.
+- **Commit and push.** Commit coherent chunks, staging by explicit path. Push
+  your task branch and open a PR once the work is complete and the local gate
+  passes; don't push directly to `main`.
+- **Merge** only under the standing merge authority in the maintainer's workspace
+  instructions, or when the maintainer asks. Without those instructions in
+  context, leave the PR for the maintainer.
+- **History and releases.** Squash is disabled: merge commit by default, rebase
+  only when the branch's commits are already clean. Every non-merge commit uses a
+  Conventional Commit subject, with `!` or a `BREAKING CHANGE:` footer for
+  incompatible behavior; the PR title does not replace that, because Release
+  Please reads the preserved commits (bump rules in `GIT_HISTORY_POLICY.md`).
+  Merging the Release Please PR tags a GitHub Release; leave it for the maintainer.
+- **Re-ground after compaction** in source, this file, the owning docs, and
+  recent commits. A summary and your own earlier proposals are not user approval.
