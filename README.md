@@ -99,6 +99,7 @@ feed --help
 uv run python -m pytest          # run tests
 uv run ruff check .              # lint
 uv run ruff format --check .     # formatting check
+python3 scripts/check_comments.py # comment ratchet
 ```
 
 Run `feed <command> --help` for per-command options. The full CLI surface is in

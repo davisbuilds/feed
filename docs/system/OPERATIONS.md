@@ -21,6 +21,7 @@ uv sync --extra dev              # Install with dev tools
 uv run python -m pytest          # Run tests (NOT uv run pytest)
 uv run ruff check .              # Lint
 uv run ruff format --check .     # Formatting check
+python3 scripts/check_comments.py # Comment ratchet
 ```
 
 ## CI
@@ -35,7 +36,7 @@ Triggers:
 Jobs:
 
 - Lint/dead-code: `uv run ruff check .`, `uv run ruff format --check .`,
-  `uv run python -m pytest -q tests/test_dead_code.py`.
+  `python3 scripts/check_comments.py`, `uv run python -m pytest -q tests/test_dead_code.py`.
 - Test: `uv run python -m pytest -q`.
 
 CI runtime details:
@@ -158,6 +159,7 @@ Utility scripts in `scripts/`:
 | `run_email.py` | Test email delivery manually |
 | `setup_cron.py` | Configure cron scheduling |
 | `setup_launchd.py` | Configure launchd scheduling |
+| `check_comments.py` | Comment ratchet against `.comment-baseline.json`; `--update` after deleting comments |
 
 ## Data
 
