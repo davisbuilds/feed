@@ -68,6 +68,7 @@ Quality gates before merge:
 
 - `uv run ruff check .`
 - `uv run ruff format --check .`
+- `python3 scripts/check_comments.py`
 - `uv run python -m pytest`
 - PR/main-push commit classification, complete unreleased-history validation,
   and locked dependency installation.
