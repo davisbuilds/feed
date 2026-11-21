@@ -7,7 +7,7 @@
     ".github/dependabot.yml": 3,
     ".github/workflows/release-please.yml": 3,
     ".github/workflows/zizmor.yml": 8,
-    "pyproject.toml": 2,
+    "pyproject.toml": 16,
     "scripts/check_publication_hygiene.py": 4,
     "scripts/preview_email.py": 2,
     "scripts/run_analyze.py": 3,
