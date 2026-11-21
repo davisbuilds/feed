@@ -19,6 +19,7 @@
     "src/feed/config.py": 15,
     "src/feed/deliver/email.py": 2,
     "src/feed/deliver/renderer.py": 1,
+    "src/feed/deliver/templates/base.html": 6,
     "src/feed/deliver/templates/digest.html": 9,
     "src/feed/ingest/__init__.py": 8,
     "src/feed/ingest/feeds.py": 18,
