@@ -2,7 +2,6 @@
 
 {% block content %}
 <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto;">
-    <!-- Header -->
     <tr>
         <td class="header">
             <h1>📬 Your Daily Digest</h1>
@@ -10,15 +9,12 @@
         </td>
     </tr>
     
-    <!-- Content -->
     <tr>
         <td class="content">
-            <!-- Stats -->
             <p style="font-size: 14px; color: #94a3b8; text-align: center; margin-bottom: 24px;">
                 {{ digest.total_articles }} articles from {{ digest.total_feeds }} sources
             </p>
             
-            <!-- Overall Themes -->
             {% if digest.overall_themes %}
             <div class="summary-box">
                 <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Today's Themes</h3>
@@ -39,7 +35,6 @@
             </div>
             {% endif %}
             
-            <!-- Categories -->
             {% for category in digest.categories %}
             <div class="category">
                 <div class="category-header">
@@ -47,14 +42,12 @@
                     <span style="margin-left: 8px; font-size: 13px; color: #94a3b8;">{{ category.article_count }} article{% if category.article_count != 1 %}s{% endif %}</span>
                 </div>
                 
-                <!-- Category Synthesis -->
                 {% if category.synthesis %}
                 <p style="font-size: 15px; color: #cbd5e1; margin-bottom: 20px; font-style: italic;">
                     {{ category.synthesis }}
                 </p>
                 {% endif %}
                 
-                <!-- Key Takeaways -->
                 {% if category.top_takeaways %}
                 <div style="background-color: #332701; border-left: 3px solid #f59e0b; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
                     <p style="font-size: 12px; font-weight: 600; color: #fcd34d; text-transform: uppercase; margin-bottom: 8px;">Key Takeaways</p>
@@ -73,7 +66,6 @@
                 </div>
                 {% endif %}
                 
-                <!-- Articles -->
                 {% for article in category.articles %}
                 <div class="article">
                     <div class="article-title">
@@ -102,7 +94,6 @@
         </td>
     </tr>
     
-    <!-- Footer -->
     <tr>
         <td class="footer">
             <p>
