@@ -46,6 +46,10 @@ feed = "feed.cli:cli"
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.format]
+# WHY: vendored verbatim from a canonical copy formatted at 88 columns; fixes go upstream.
+exclude = ["scripts/check_comments.py"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "ERA", "RUF", "PIE"]
 
