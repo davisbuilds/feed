@@ -67,10 +67,8 @@ class EmailSender:
         logger.info(f"Sending digest to {recipient}")
 
         try:
-            # Render email
             html, text = self.renderer.render(digest, subject)
 
-            # Send via Resend
             response = resend.Emails.send(
                 {
                     "from": self.from_address,

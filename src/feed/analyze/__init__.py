@@ -64,7 +64,6 @@ def run_analysis(
     if db is None:
         db = Database(settings.data_dir / "articles.db")
 
-    # Set up cache unless disabled
     cache: CacheStore | None = None
     if not no_cache:
         from feed.storage.cache import CacheStore

@@ -9,7 +9,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from feed.llm import DEFAULT_OPENAI_REASONING_EFFORT, PROVIDER_DEFAULTS, ReasoningEffort
 
-# XDG config directory for user configuration
 XDG_CONFIG_PATH = Path.home() / ".config" / "feed"
 
 
@@ -18,14 +17,14 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=[
-            XDG_CONFIG_PATH / "config.env",  # User config (lower priority)
-            ".env",  # Project .env (higher priority)
+            # WHY: later files win, so a project .env overrides the user config
+            XDG_CONFIG_PATH / "config.env",
+            ".env",
         ],
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
-    # LLM
     llm_provider: Literal["gemini", "openai", "anthropic"] = Field(
         default="openai",
         description="LLM provider to use",
@@ -52,18 +51,14 @@ class Settings(BaseSettings):
         description="OpenAI reasoning effort (ignored by other providers)",
     )
 
-    # API Keys
     resend_api_key: str = Field(..., min_length=1, description="Resend API key")
 
-    # Email
     email_from: str = Field(..., min_length=1, description="Sender email address")
     email_to: str = Field(..., min_length=1, description="Recipient email address")
 
-    # Scheduling
     digest_hour: int = Field(default=7, ge=0, le=23, description="Hour to send digest (0-23)")
     digest_timezone: str = Field(default="America/New_York", description="Timezone for scheduling")
 
-    # Processing
     max_articles_per_feed: int = Field(default=10, description="Max articles to fetch per feed")
     lookback_hours: int = Field(default=24, description="Hours to look back for new articles")
     max_tokens_per_summary: int = Field(default=500, description="Max tokens per article summary")
@@ -84,16 +79,13 @@ class Settings(BaseSettings):
         description="Max number of cross-category insights in a digest",
     )
 
-    # Retry & cache
     llm_retries: int = Field(default=2, ge=0, le=5, description="Max LLM retry attempts")
     llm_timeout: int = Field(default=120, ge=10, description="LLM timeout in seconds")
     cache_ttl_days: int = Field(default=7, ge=1, description="Cache TTL in days")
 
-    # Paths
     config_dir: Path = Field(default=Path("config"), description="Config directory")
     data_dir: Path = Field(default=Path("data"), description="Data directory")
 
-    # Logging
     log_level: str = Field(default="INFO", description="Logging level")
 
     @property
@@ -123,10 +115,9 @@ class Settings(BaseSettings):
         """Fill provider-specific model defaults when omitted."""
         provider = self.llm_provider
 
-        # Migration safety: if a legacy GEMINI_MODEL is present but the selected
-        # provider is not Gemini, ignore it and apply the provider default.
-        # This prevents accidentally passing a Gemini model name to OpenAI or
-        # Anthropic during staged env-var migrations.
+        # WHY: during staged env-var migrations a legacy GEMINI_MODEL can linger. When
+        # the provider is not Gemini, ignore it and apply the provider default so a Gemini
+        # model name is never sent to OpenAI or Anthropic.
         if (
             provider != "gemini"
             and self.llm_model

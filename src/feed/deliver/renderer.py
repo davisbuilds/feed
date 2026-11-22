@@ -11,7 +11,6 @@ from feed.models import DailyDigest
 
 logger = get_logger("renderer")
 
-# Template directory
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 
 

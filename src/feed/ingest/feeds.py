@@ -113,7 +113,7 @@ def fetch_feed(
             if status_code < 400:
                 break
 
-            # Some feed hosts/CDNs block simple bot user agents with false 404/403.
+            # WHY: some feed hosts and CDNs answer simple bot user agents with false 404/403.
             if status_code in BOT_FILTER_RETRY_STATUS_CODES and headers is FEED_AGENT_HEADERS:
                 logger.debug(
                     f"{feed_name}: got {status_code} with Feed headers, retrying "
@@ -144,11 +144,10 @@ def fetch_feed(
 
         feed = feedparser.parse(response.content)
 
-        # Check for feed-level errors
         bozo_exception = str(feed.bozo_exception) if feed.bozo and feed.bozo_exception else None
         if feed.bozo and feed.bozo_exception:
             error_msg = bozo_exception or "Unknown feed parse error"
-            # Some bozo exceptions are recoverable (e.g., CharacterEncodingOverride)
+            # WHY: some bozo exceptions (e.g. CharacterEncodingOverride) still yield usable entries.
             if not feed.entries:
                 logger.warning(f"Feed error for {feed_name}: {error_msg}")
                 return FeedResult(
@@ -166,31 +165,26 @@ def fetch_feed(
                     bozo_exception=error_msg,
                 )
 
-        # Determine feed title
         actual_feed_name = feed.feed.get("title", feed_name)
 
-        # Calculate cutoff time
         cutoff = datetime.now(UTC) - timedelta(hours=lookback_hours)
 
         articles: list[Article] = []
 
-        for entry in feed.entries[: max_articles * 2]:  # Fetch extra, filter by date
-            # Parse publication date
+        # WHY: over-fetch because the date filter drops entries
+        for entry in feed.entries[: max_articles * 2]:
             published = _parse_entry_date(entry)
             if published is None:
                 logger.debug(f"Skipping entry without date: {entry.get('title', 'Unknown')}")
                 continue
 
-            # Skip old articles
             if published < cutoff:
                 continue
 
-            # Extract article URL
             url = entry.get("link", "")
             if not url:
                 continue
 
-            # Create article
             article = Article(
                 id=generate_article_id(url),
                 url=url,
@@ -199,7 +193,7 @@ def fetch_feed(
                 feed_name=actual_feed_name,
                 feed_url=feed_url,
                 published=published,
-                content="",  # Will be populated by parser
+                content="",  # WHY: the parser fills content after fetching the page
                 category=category,
             )
 
@@ -296,7 +290,6 @@ def _format_http_error(response: httpx.Response, attempt_summaries: list[str]) -
 
 def _parse_entry_date(entry: dict) -> datetime | None:
     """Parse publication date from feed entry."""
-    # Try different date fields
     for field in ["published_parsed", "updated_parsed", "created_parsed"]:
         if parsed := entry.get(field):
             try:
@@ -306,7 +299,6 @@ def _parse_entry_date(entry: dict) -> datetime | None:
             except (ValueError, OverflowError):
                 continue
 
-    # Try string parsing as fallback
     for field in ["published", "updated", "created"]:
         if date_str := entry.get(field):
             try:
@@ -322,15 +314,12 @@ def _parse_entry_date(entry: dict) -> datetime | None:
 
 def _extract_author(entry: dict) -> str:
     """Extract author name from feed entry."""
-    # Try author field
     if author := entry.get("author"):
         return author
 
-    # Try author_detail
     if (author_detail := entry.get("author_detail")) and (name := author_detail.get("name")):
         return name
 
-    # Try authors list
     if (authors := entry.get("authors")) and (name := authors[0].get("name")):
         return name
 
@@ -357,7 +346,6 @@ def fetch_all_feeds(
 
     results: list[FeedResult] = []
 
-    # Prepare arguments for each feed
     fetch_args = []
     for feed_name, config in feeds_config.items():
         url = config.get("url")
@@ -368,7 +356,6 @@ def fetch_all_feeds(
         category = config.get("category", "Uncategorized")
         fetch_args.append((url, feed_name, category))
 
-    # Execute concurrently
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_feed = {
             executor.submit(

@@ -3,7 +3,6 @@
 import sys
 from pathlib import Path
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from datetime import UTC, datetime
@@ -121,7 +120,6 @@ def main() -> None:
 
     sender = EmailSender()
 
-    # Test 1: Send test email
     print("\n" + "-" * 60)
     print("Test 1: Sending test email...")
     print("-" * 60)
@@ -135,7 +133,6 @@ def main() -> None:
         print(f"❌ Test email failed: {result.error}")
         return
 
-    # Test 2: Send sample digest
     print("\n" + "-" * 60)
     print("Test 2: Sending sample digest...")
     print("-" * 60)

@@ -3,7 +3,6 @@
 import sys
 from pathlib import Path
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from feed.config import FeedConfig, get_settings
@@ -21,15 +20,12 @@ def main() -> None:
     print("Testing Ingestion Pipeline")
     print("=" * 60)
 
-    # Use test database
     db_path = settings.data_dir / "test_articles.db"
-    # Ensure data directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     db = Database(db_path)
     print(f"\nUsing database: {db_path}")
 
-    # Load feeds
     feed_config = FeedConfig(settings.config_dir / "feeds.yaml")
     feeds = feed_config.feeds
     print(f"Found {len(feeds)} configured feeds:")
@@ -58,7 +54,6 @@ def main() -> None:
         for error in result.errors:
             print(f"  ✗ {error}")
 
-    # Show sample articles
     print("\n" + "-" * 60)
     print("Sample Articles")
     print("-" * 60)

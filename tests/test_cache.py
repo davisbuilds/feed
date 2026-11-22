@@ -26,8 +26,8 @@ class TestMakeCacheKey:
 
     def test_key_is_hex_string(self):
         key = make_cache_key("article-1", "gemini-flash")
-        assert len(key) == 64  # SHA256 hex digest
-        int(key, 16)  # should not raise
+        assert len(key) == 64
+        int(key, 16)
 
 
 class TestCacheStore:
@@ -51,7 +51,7 @@ class TestCacheStore:
     def test_get_expired_returns_none(self, cache):
         """Expired entries should not be returned."""
         data = {"summary": "old"}
-        cache.set("summary", "key1", data, ttl_days=-1)  # already expired
+        cache.set("summary", "key1", data, ttl_days=-1)
 
         assert cache.get("summary", "key1") is None
 
@@ -99,13 +99,11 @@ class TestCacheStore:
 
     def test_lazy_cleanup_removes_expired_on_set(self, cache):
         """Expired entries are cleaned up lazily on the next set() call."""
-        cache.set("summary", "k1", {"a": 1}, ttl_days=-1)  # already expired
+        cache.set("summary", "k1", {"a": 1}, ttl_days=-1)
 
-        # Not yet cleaned — but get() should still filter it
         assert cache.get("summary", "k1") is None
 
-        # Next set() triggers cleanup
         cache.set("summary", "k2", {"b": 2})
 
         stats = cache.stats()
-        assert stats["total_entries"] == 1  # only k2 remains
+        assert stats["total_entries"] == 1

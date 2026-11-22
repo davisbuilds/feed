@@ -36,7 +36,6 @@ def setup_logging(level: LogLevel = "INFO") -> logging.Logger:
         handlers=[handler],
     )
 
-    # Reduce noise from third-party libraries
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("anthropic").setLevel(logging.WARNING)
     logging.getLogger("feedparser").setLevel(logging.WARNING)

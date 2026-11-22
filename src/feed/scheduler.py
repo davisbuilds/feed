@@ -233,7 +233,6 @@ def build_launchd_path() -> str:
         "/usr/bin",
         "/bin",
     ]
-    # Preserve order while dropping accidental duplicates.
     unique_paths: list[str] = []
     for path in candidates:
         if path not in unique_paths:

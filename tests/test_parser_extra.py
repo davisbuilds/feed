@@ -136,7 +136,6 @@ def test_process_articles_drops_low_word_count(mock_fetch):
 
 
 def test_process_articles_keeps_articles_above_threshold():
-    # Pre-populate word_count so we don't need network fetch
     a = _article()
     a.content = " ".join(["w"] * 80)
     a.word_count = 80

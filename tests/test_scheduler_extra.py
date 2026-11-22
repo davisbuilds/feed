@@ -163,7 +163,6 @@ def test_build_launchd_path_includes_expected_entries():
     entries = path.split(":")
     assert "/usr/bin" in entries
     assert "/bin" in entries
-    # No duplicates
     assert len(entries) == len(set(entries))
 
 

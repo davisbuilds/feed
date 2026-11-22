@@ -5,7 +5,6 @@ import webbrowser
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from datetime import UTC, datetime
@@ -157,7 +156,6 @@ def main() -> None:
     subject = f"📬 Your Daily Digest - {digest.date.strftime('%B %d, %Y')}"
     html, text = renderer.render(digest, subject)
 
-    # Write to temp file and open
     with NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
         f.write(html)
         filepath = f.name
