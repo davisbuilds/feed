@@ -34,15 +34,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# WHY: module names are computed against MODULE_BASE, so keep these in sync
-# with the import style used in code.
 SRC_DIR = ROOT / "src" / "feed"
 MODULE_BASE = ROOT / "src"
 IMPORT_ROOT = "feed"
 
-# WHY: references can live outside the package. .py files are parsed (AST); other
-# files are searched as text so symbols used only in templates/configs aren't
-# flagged. scripts/ holds out-of-package consumers that import feed.
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests", ROOT / "scripts"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.html")]
 
@@ -52,8 +47,6 @@ MODULE_EXCEPTIONS = {
     "feed.cli",  # WHY: console_scripts entry point (feed.cli:cli)
 }
 
-# WHY: public symbols intentionally unreferenced internally (external API,
-# reflection). Format: "module::name", with the reason on each line.
 SYMBOL_EXCEPTIONS: set[str] = set()
 
 # WHY: typer invokes @app.command() and @app.callback() functions, so they are

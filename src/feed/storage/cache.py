@@ -85,7 +85,6 @@ class CacheStore:
                    VALUES (?, ?, ?, ?)""",
                 (kind, key, json.dumps(value), expires_at.isoformat()),
             )
-            # WHY: expired rows are purged on write; there is no background cleanup job.
             conn.execute(
                 "DELETE FROM cache WHERE expires_at <= ?",
                 (datetime.now(UTC).isoformat(),),

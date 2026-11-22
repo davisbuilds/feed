@@ -20,7 +20,6 @@ def main() -> None:
     print("Testing Analysis Pipeline")
     print("=" * 60)
 
-    # WHY: reuse the database run_ingest.py writes.
     db_path = settings.data_dir / "test_articles.db"
 
     if not db_path.exists():

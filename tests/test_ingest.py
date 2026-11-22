@@ -159,8 +159,6 @@ class TestAtomicSave:
         a2 = self._make_article("id_bbb", "https://example.com/same")
 
         assert db.save_article(a1) is True
-        # WHY: a different ID with the same URL is still rejected by the url UNIQUE
-        # constraint, and INSERT OR IGNORE does not raise.
         assert db.save_article(a2) is False
 
 

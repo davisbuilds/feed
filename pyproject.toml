@@ -60,6 +60,4 @@ python_version = "3.12"
 strict = true
 
 [tool.uv]
-# WHY: supply-chain quarantine ignores distributions uploaded in the last 7 days.
-# For an urgent fix, override one package with exclude-newer-package.
 exclude-newer = "7 days"

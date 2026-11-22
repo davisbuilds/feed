@@ -193,7 +193,7 @@ def fetch_feed(
                 feed_name=actual_feed_name,
                 feed_url=feed_url,
                 published=published,
-                content="",  # WHY: the parser fills content after fetching the page
+                content="",
                 category=category,
             )
 

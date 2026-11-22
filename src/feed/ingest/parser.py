@@ -116,8 +116,6 @@ def extract_text_content(html: str, base_url: str = "") -> str:
 
     content_element = None
 
-    # WHY: most specific first. div.body.markup is Substack, div.entry-content is
-    # WordPress, div.article-content is common on news sites.
     for selector in [
         "div.body.markup",
         "article.post",
