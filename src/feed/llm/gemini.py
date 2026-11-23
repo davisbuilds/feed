@@ -13,7 +13,10 @@ class GeminiClient:
     """Google Gemini LLM provider."""
 
     def __init__(self, api_key: str, model: str):
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(api_version="v1beta"),
+        )
         self.model = model
 
     def generate(
