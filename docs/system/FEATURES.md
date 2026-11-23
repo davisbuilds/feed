@@ -26,6 +26,16 @@ Product-surface reference for Feed.
 - `--copy` flag on `run` and `analyze` copies digest as markdown to clipboard (works alongside `--send`).
 - Test email mode via `feed send --test`.
 
+With `--format json`, `feed run`, `feed analyze`, and `feed send` write one JSON
+value to stdout on success. A digest uses the `DailyDigest` object shape. If the
+command completes without a digest, it writes `null`. Progress and error messages
+go to stderr. A nonzero exit leaves stdout empty.
+
+`feed send --format json` previews the digest and skips email delivery, even when
+`--test` is also set. `feed run --send --format json` delivers the digest and writes
+the JSON after delivery succeeds. `--copy` still copies the Markdown digest when
+JSON output is selected.
+
 ## Scheduling
 
 - Recurring digest generation via `feed schedule`.

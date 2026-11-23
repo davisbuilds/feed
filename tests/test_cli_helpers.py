@@ -101,13 +101,13 @@ def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None
     """Clipboard copy should use the Linux xclip fallback when pbcopy is unavailable."""
     import feed.cli as cli
 
-    calls: list[tuple[list[str], bytes, bool]] = []
+    calls: list[tuple[list[str], bytes, int | None, bool]] = []
 
     def fake_which(command: str) -> str | None:
         return "/usr/bin/xclip" if command == "xclip" else None
 
-    def fake_run(args: list[str], input: bytes, check: bool):
-        calls.append((args, input, check))
+    def fake_run(args: list[str], input: bytes, stdout: int | None, check: bool):
+        calls.append((args, input, stdout, check))
         return SimpleNamespace(returncode=0)
 
     monkeypatch.setattr(cli.shutil, "which", fake_which)
@@ -116,7 +116,8 @@ def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None
     assert cli._copy_digest_to_clipboard(_sample_digest()) is True
     assert calls[0][0] == ["/usr/bin/xclip", "-selection", "clipboard"]
     assert b"CLI Article" in calls[0][1]
-    assert calls[0][2] is False
+    assert calls[0][2] is None
+    assert calls[0][3] is False
 
 
 def test_copy_digest_to_clipboard_returns_false_without_tool(monkeypatch) -> None:

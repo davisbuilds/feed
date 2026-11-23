@@ -63,6 +63,7 @@ FormatChoice = typer.Option(
 __version__ = package_version("feed")
 
 console = Console()
+stderr_console = Console(stderr=True)
 DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEDULE_LOG_FILE = Path("logs/scheduler.log")
 DEFAULT_LAUNCH_AGENTS_DIR = Path.home() / "Library" / "LaunchAgents"
@@ -86,20 +87,20 @@ LaunchAgentsDirOption = typer.Option(
 state = {"verbose": False}
 
 
-def _load_settings():
+def _load_settings(output: Console = console):
     """Load settings with a user-friendly error on failure."""
     try:
         return get_settings()
     except Exception as e:
-        console.print(
+        output.print(
             "[red]Configuration error.[/red] Check your config file or environment variables.\n"
         )
         for error in getattr(e, "errors", list)():
             loc = ".".join(str(part) for part in error["loc"])
-            console.print(f"  [red]✗[/red] {loc}: {error['msg']}")
+            output.print(f"  [red]✗[/red] {loc}: {error['msg']}")
         if not getattr(e, "errors", None):
-            console.print(f"  [red]✗[/red] {e}")
-        console.print("\n[dim]Run 'feed init' to set up, or 'feed config' to verify.[/dim]")
+            output.print(f"  [red]✗[/red] {e}")
+        output.print("\n[dim]Run 'feed init' to set up, or 'feed config' to verify.[/dim]")
         raise typer.Exit(code=1) from None
 
 
@@ -173,6 +174,24 @@ class _HelpGroup(typer.core.TyperGroup):
             console=rich_utils._get_rich_console(),
             cmd_len=max(len(command) for command, _ in _QUICK_REF_ITEMS),
         )
+
+
+def _print_unexpected_error(error: Exception, output: Console) -> None:
+    output.print(f"\n[red]Unexpected error:[/red] {error}")
+    output.print("[dim]Run with --verbose for more details.[/dim]")
+
+
+class _DigestCommand(typer.core.TyperCommand):
+    def invoke(self, ctx: typer.Context) -> object:
+        if ctx.params.get("output_format") != "json":
+            return super().invoke(ctx)
+        try:
+            return super().invoke(ctx)
+        except (typer.Exit, BrokenPipeError):
+            raise
+        except Exception as error:
+            _print_unexpected_error(error, stderr_console)
+            raise typer.Exit(code=1) from None
 
 
 app = typer.Typer(
@@ -341,7 +360,7 @@ LLM_PROVIDER={provider}
     )
 
 
-def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
+def _copy_digest_to_clipboard(digest: DailyDigest, *, stdout: int | None = None) -> bool:
     """Render digest as markdown and copy to system clipboard. Returns True on success."""
     from feed.deliver.renderer import EmailRenderer
 
@@ -353,6 +372,7 @@ def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
         proc = subprocess.run(
             [pbcopy],
             input=markdown.encode(),
+            stdout=stdout,
             check=False,
         )
         return proc.returncode == 0
@@ -366,16 +386,19 @@ def _copy_digest_to_clipboard(digest: DailyDigest) -> bool:
                 if cmd == "xclip"
                 else [path, "--clipboard", "--input"]
             )
-            proc = subprocess.run(args, input=markdown.encode(), check=False)
+            proc = subprocess.run(args, input=markdown.encode(), stdout=stdout, check=False)
             return proc.returncode == 0
 
     return False
 
 
-def _print_digest(digest: DailyDigest, output_format: str) -> None:
+def _print_digest(digest: DailyDigest | None, output_format: str | None) -> None:
     """Print digest to terminal in specified format."""
     if output_format == "json":
-        print(json.dumps(digest.model_dump(mode="json"), indent=2, default=str))
+        data = digest.model_dump(mode="json") if digest is not None else None
+        print(json.dumps(data, indent=2, default=str))
+    elif digest is None:
+        return
     elif output_format == "text":
         from feed.deliver.renderer import EmailRenderer
 
@@ -469,17 +492,19 @@ def _print_digest_rich(digest: DailyDigest) -> None:
     )
 
 
-@app.command()
+@app.command(cls=_DigestCommand)
 def run(
-    send: bool = typer.Option(False, "--send", help="Send email instead of terminal output"),
+    send: bool = typer.Option(False, "--send", help="Send digest by email"),
     output_format: str = FormatChoice,
     no_cache: bool = typer.Option(False, "--no-cache", help="Skip cache, re-summarize all"),
     copy: bool = typer.Option(False, "--copy", help="Copy digest as markdown to clipboard"),
 ) -> None:
     """Run the full digest pipeline: ingest → analyze → send."""
-    settings = _load_settings()
+    json_output = output_format == "json"
+    diagnostics = stderr_console if json_output else console
+    settings = _load_settings(diagnostics)
 
-    console.print(
+    diagnostics.print(
         Panel.fit(
             "[bold]📬 Feed CLI[/bold]\n"
             f"Running full pipeline at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
@@ -491,80 +516,81 @@ def run(
     db = Database(settings.data_dir / "articles.db")
 
     # Phase 1: Ingest
-    console.print("\n[bold cyan]Phase 1: Ingesting feeds[/bold cyan]")
+    diagnostics.print("\n[bold cyan]Phase 1: Ingesting feeds[/bold cyan]")
     from feed.ingest import run_ingestion
 
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console,
+        console=diagnostics,
     ) as progress:
         task = progress.add_task("Fetching feeds...", total=None)
         ingest_result = run_ingestion(db=db)
         progress.remove_task(task)
 
-    console.print(f"  ✓ Checked {ingest_result.feeds_checked} feeds")
-    console.print(f"  ✓ Found {ingest_result.articles_new} new articles")
+    diagnostics.print(f"  ✓ Checked {ingest_result.feeds_checked} feeds")
+    diagnostics.print(f"  ✓ Found {ingest_result.articles_new} new articles")
 
     if ingest_result.feeds_failed > 0:
-        console.print(f"  [yellow]⚠ {ingest_result.feeds_failed} feeds failed[/yellow]")
+        diagnostics.print(f"  [yellow]⚠ {ingest_result.feeds_failed} feeds failed[/yellow]")
         for error in ingest_result.errors[:5]:
-            console.print(f"    [yellow]• {error}[/yellow]")
+            diagnostics.print(f"    [yellow]• {error}[/yellow]")
         if len(ingest_result.errors) > 5:
-            console.print(
+            diagnostics.print(
                 f"    [dim]... and {len(ingest_result.errors) - 5} more feed errors[/dim]"
             )
 
     # Phase 2: Analyze
-    console.print("\n[bold cyan]Phase 2: Analyzing articles[/bold cyan]")
+    diagnostics.print("\n[bold cyan]Phase 2: Analyzing articles[/bold cyan]")
     from feed.analyze import run_analysis
 
     pending = db.get_pending_articles()
     if not pending:
-        console.print("  [dim]No new articles to analyze[/dim]")
+        diagnostics.print("  [dim]No new articles to analyze[/dim]")
         analysis_result = None
     else:
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
-            console=console,
+            console=diagnostics,
         ) as progress:
             task = progress.add_task(f"Summarizing {len(pending)} articles...", total=None)
             analysis_result = run_analysis(db=db, no_cache=no_cache)
             progress.remove_task(task)
 
-        console.print(f"  ✓ Analyzed {analysis_result.articles_analyzed} articles")
+        diagnostics.print(f"  ✓ Analyzed {analysis_result.articles_analyzed} articles")
         cost = analysis_result.cost_estimate_usd
         cost_str = f"${cost:.4f}" if cost is not None else "$?.????"
-        console.print(f"  ✓ Used {analysis_result.tokens_used:,} tokens ({cost_str})")
+        diagnostics.print(f"  ✓ Used {analysis_result.tokens_used:,} tokens ({cost_str})")
 
     # Phase 3: Output or Send
-    if analysis_result and analysis_result.digest:
+    digest = analysis_result.digest if analysis_result else None
+    if digest:
         if send:
-            console.print("\n[bold cyan]Phase 3: Sending digest[/bold cyan]")
+            diagnostics.print("\n[bold cyan]Phase 3: Sending digest[/bold cyan]")
             from feed.deliver import EmailSender
 
             sender = EmailSender()
-            send_result = sender.send_digest(analysis_result.digest)
+            send_result = sender.send_digest(digest)
 
             if send_result.success:
-                console.print(f"  ✓ Email sent to {settings.email_to}")
-                console.print(f"  ✓ Email ID: {send_result.email_id}")
+                diagnostics.print(f"  ✓ Email sent to {settings.email_to}")
+                diagnostics.print(f"  ✓ Email ID: {send_result.email_id}")
             else:
-                console.print(f"  [red]✗ Send failed: {send_result.error}[/red]")
+                diagnostics.print(f"  [red]✗ Send failed: {send_result.error}[/red]")
                 raise typer.Exit(code=1)
-        else:
+        elif not json_output:
             console.print("\n[bold cyan]Phase 3: Digest output[/bold cyan]\n")
-            _print_digest(analysis_result.digest, output_format)
+            _print_digest(digest, output_format)
     else:
-        console.print("\n[dim]No digest to output[/dim]")
+        diagnostics.print("\n[dim]No digest to output[/dim]")
 
     # Copy to clipboard (independent of send/output)
-    if copy and analysis_result and analysis_result.digest:
-        if _copy_digest_to_clipboard(analysis_result.digest):
-            console.print("\n  [green]✓[/green] Copied digest to clipboard (markdown)")
+    if copy and digest:
+        if _copy_digest_to_clipboard(digest, stdout=subprocess.DEVNULL if json_output else None):
+            diagnostics.print("\n  [green]✓[/green] Copied digest to clipboard (markdown)")
         else:
-            console.print(
+            diagnostics.print(
                 "\n  [yellow]⚠ Could not copy to clipboard (no clipboard tool found)[/yellow]"
             )
 
@@ -573,12 +599,15 @@ def run(
     if analysis_result:
         total_time += analysis_result.duration_seconds
 
-    console.print(
+    diagnostics.print(
         Panel.fit(
             f"[bold green]✓ Complete[/bold green] in {total_time:.1f}s",
             border_style="green",
         )
     )
+
+    if json_output:
+        _print_digest(digest, output_format)
 
 
 @app.command()
@@ -778,7 +807,7 @@ def test_feeds(
     console.print("\n[green]✓ All feed tests passed[/green]")
 
 
-@app.command()
+@app.command(cls=_DigestCommand)
 def analyze(
     output_format: str | None = typer.Option(
         None,
@@ -790,16 +819,20 @@ def analyze(
     copy: bool = typer.Option(False, "--copy", help="Copy digest as markdown to clipboard"),
 ) -> None:
     """Summarize pending articles with the configured LLM."""
-    settings = _load_settings()
+    json_output = output_format == "json"
+    diagnostics = stderr_console if json_output else console
+    settings = _load_settings(diagnostics)
 
     db = Database(settings.data_dir / "articles.db")
     pending = db.get_pending_articles()
 
     if not pending:
-        console.print("[yellow]No pending articles to analyze[/yellow]")
+        diagnostics.print("[yellow]No pending articles to analyze[/yellow]")
+        if json_output:
+            _print_digest(None, output_format)
         return
 
-    console.print(f"[bold]Analyzing {len(pending)} articles...[/bold]")
+    diagnostics.print(f"[bold]Analyzing {len(pending)} articles...[/bold]")
 
     from feed.analyze import run_analysis
 
@@ -816,25 +849,30 @@ def analyze(
     table.add_row("Estimated cost", cost_str)
     table.add_row("Duration", f"{result.duration_seconds:.1f}s")
 
-    console.print(table)
+    diagnostics.print(table)
 
     if result.digest:
-        console.print(
+        diagnostics.print(
             f"\n[green]Digest ready with {len(result.digest.categories)} categories[/green]"
         )
-        if output_format:
+        if output_format and not json_output:
             console.print()
             _print_digest(result.digest, output_format)
         if copy:
-            if _copy_digest_to_clipboard(result.digest):
-                console.print("\n[green]✓[/green] Copied digest to clipboard (markdown)")
+            if _copy_digest_to_clipboard(
+                result.digest, stdout=subprocess.DEVNULL if json_output else None
+            ):
+                diagnostics.print("\n[green]✓[/green] Copied digest to clipboard (markdown)")
             else:
-                console.print(
+                diagnostics.print(
                     "\n[yellow]⚠ Could not copy to clipboard (no clipboard tool found)[/yellow]"
                 )
 
+    if json_output:
+        _print_digest(result.digest, output_format)
 
-@app.command()
+
+@app.command(cls=_DigestCommand)
 def send(
     test: bool = typer.Option(False, "--test", help="Send test email instead"),
     output_format: str | None = typer.Option(
@@ -845,7 +883,9 @@ def send(
     ),
 ) -> None:
     """Send the digest email, or preview with --format."""
-    settings = _load_settings()
+    json_output = output_format == "json"
+    diagnostics = stderr_console if json_output else console
+    settings = _load_settings(diagnostics)
 
     # Build digest from recent summarized articles (needed for both preview and send)
     db = Database(settings.data_dir / "articles.db")
@@ -853,17 +893,19 @@ def send(
     articles = db.get_articles_since(since, status=ArticleStatus.SUMMARIZED)
 
     if not articles:
-        console.print("[yellow]No summarized articles available[/yellow]")
+        diagnostics.print("[yellow]No summarized articles available[/yellow]")
+        if json_output:
+            _print_digest(None, output_format)
         return
 
     from feed.analyze.digest_builder import DigestBuilder
 
     builder = DigestBuilder()
-    digest = builder.build_digest(articles)
+    digest, _, _ = builder.build_digest(articles)
 
     # Preview mode: output to terminal instead of sending
     if output_format:
-        console.print(f"[bold]Preview of digest ({len(articles)} articles):[/bold]\n")
+        diagnostics.print(f"[bold]Preview of digest ({len(articles)} articles):[/bold]\n")
         _print_digest(digest, output_format)
         return
 
@@ -1373,8 +1415,7 @@ def cli() -> None:
         console.print("\n[dim]Aborted.[/dim]")
         raise SystemExit(130) from None
     except Exception as e:
-        console.print(f"\n[red]Unexpected error:[/red] {e}")
-        console.print("[dim]Run with --verbose for more details.[/dim]")
+        _print_unexpected_error(e, console)
         raise SystemExit(1) from e
 
 
