@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
-from shlex import quote
+from shlex import quote, split
 from types import SimpleNamespace
 
 import pytest
@@ -119,14 +119,16 @@ def test_schedule_previews_checkout_root_from_another_directory(monkeypatch, tmp
 
     checkout = Path(__file__).resolve().parents[1]
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("COLUMNS", "260")
+    monkeypatch.setenv("COLUMNS", "1024")
 
     result = CliRunner().invoke(cli.app, ["schedule", "--backend", "cron"])
 
     assert result.exit_code == 0, result.output
-    assert f"cd {quote(str(checkout))} &&" in result.output
-    assert "./feed run --send" in result.output
-    assert quote(str(checkout / "logs" / "scheduler.log")) in result.output
+    cron_line = next(line for line in result.output.splitlines() if "/bin/zsh -lc " in line)
+    command = split(cron_line)[-1]
+    assert command.startswith(f"cd {quote(str(checkout))} &&")
+    assert "./feed run --send" in command
+    assert quote(str(checkout / "logs" / "scheduler.log")) in command
 
 
 def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None:
