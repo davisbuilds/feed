@@ -62,7 +62,16 @@ __version__ = package_version("feed")
 
 console = Console()
 stderr_console = Console(stderr=True)
-DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_MODULE_PARENT = Path(__file__).resolve().parent.parent
+_REPOSITORY_ROOT = _MODULE_PARENT.parent
+_CHECKOUT_ROOT = (
+    _REPOSITORY_ROOT
+    if _MODULE_PARENT.name == "src"
+    and (_REPOSITORY_ROOT / ".git").exists()
+    and (_REPOSITORY_ROOT / "pyproject.toml").is_file()
+    else None
+)
+DEFAULT_PROJECT_ROOT = _CHECKOUT_ROOT or _MODULE_PARENT
 DEFAULT_SCHEDULE_LOG_FILE = Path("logs/scheduler.log")
 DEFAULT_LAUNCH_AGENTS_DIR = Path.home() / "Library" / "LaunchAgents"
 ProjectRootOption = typer.Option(
@@ -314,7 +323,7 @@ LLM_PROVIDER={provider}
     # Offer to copy sample feeds.yaml
     console.print("\n[bold cyan]Feeds Configuration[/bold cyan]")
     feeds_dest = XDG_CONFIG_PATH / "feeds.yaml"
-    sample_feeds = Path(__file__).parent.parent / "config" / "feeds.yaml"
+    sample_feeds = (_CHECKOUT_ROOT or Path(__file__).parent.parent) / "config" / "feeds.yaml"
 
     if feeds_dest.exists() and not force:
         console.print(f"[dim]feeds.yaml already exists at {feeds_dest}[/dim]")
