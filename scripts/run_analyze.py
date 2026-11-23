@@ -3,7 +3,6 @@
 import sys
 from pathlib import Path
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from feed.analyze import run_analysis
@@ -21,7 +20,6 @@ def main() -> None:
     print("Testing Analysis Pipeline")
     print("=" * 60)
 
-    # Use the same database as ingestion
     db_path = settings.data_dir / "test_articles.db"
 
     if not db_path.exists():
@@ -31,7 +29,6 @@ def main() -> None:
 
     db = Database(db_path)
 
-    # Check for pending articles
     pending = db.get_pending_articles()
     print(f"\nFound {len(pending)} pending articles")
 

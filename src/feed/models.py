@@ -35,7 +35,6 @@ class Article(BaseModel):
     category: str = Field(default="Uncategorized", description="Content category")
     status: ArticleStatus = Field(default=ArticleStatus.PENDING, description="Processing status")
 
-    # Populated after analysis
     summary: str | None = Field(default=None, description="LLM-generated summary")
     key_takeaways: list[str] = Field(default_factory=list, description="Key insights")
     action_items: list[str] = Field(default_factory=list, description="Actionable items")
@@ -83,7 +82,6 @@ class DailyDigest(BaseModel):
     total_feeds: int = Field(default=0, description="Total feeds checked")
     processing_time_seconds: float = Field(default=0.0, description="Time to generate digest")
 
-    # Meta insights
     overall_themes: list[str] = Field(default_factory=list, description="Cross-category themes")
     must_read: list[str] = Field(default_factory=list, description="URLs of must-read articles")
     non_obvious_insights: list[NonObviousInsight] = Field(

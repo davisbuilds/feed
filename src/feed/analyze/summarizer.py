@@ -66,7 +66,6 @@ class Summarizer:
         model_name: str | None = None,
     ) -> SummaryResult:
         """Generate a summary for a single article."""
-        # Check cache first
         if cache and model_name:
             from feed.storage.cache import make_cache_key
 
@@ -117,8 +116,7 @@ class Summarizer:
                 error=None,
             )
 
-            # Store in cache on success — isolated so a cache
-            # write failure never drops a valid summary.
+            # WHY: isolated so a cache write failure never drops a valid summary.
             if cache and cache_key:
                 try:
                     cache.set("summary", cache_key, dict(result))

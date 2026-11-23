@@ -32,41 +32,29 @@ import ast
 import re
 from pathlib import Path
 
-# ─── Configuration (per-project) ───────────────────────────────────────────
-
 ROOT = Path(__file__).resolve().parents[1]
 
-# Where first-party source lives, and the base directory module names are
-# computed against. Keep these in sync with the import style used in code.
 SRC_DIR = ROOT / "src" / "feed"
-MODULE_BASE = ROOT / "src"  # module names are relative to here -> "feed.ingest.feeds"
-IMPORT_ROOT = "feed"  # first-party import prefix
+MODULE_BASE = ROOT / "src"
+IMPORT_ROOT = "feed"
 
-# Directories scanned for *references* in addition to source: any place a
-# symbol might legitimately be used. .py files are parsed (AST); other files
-# are searched as text so symbols used only in templates/configs aren't flagged.
-# scripts/ holds out-of-package consumers that import feed.
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests", ROOT / "scripts"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.html")]
 
 SKIP_DIR_NAMES = {"__pycache__", ".venv", ".git", ".mypy_cache", ".ruff_cache"}
 
-# Modules invoked via console-scripts / frameworks, never imported by name.
 MODULE_EXCEPTIONS = {
-    "feed.cli",  # console_scripts entry point (feed.cli:cli)
+    "feed.cli",  # WHY: console_scripts entry point (feed.cli:cli)
 }
 
-# Public symbols intentionally unreferenced internally (external API, reflection,
-# etc.). Format: "module::name". Document *why* on each line.
 SYMBOL_EXCEPTIONS: set[str] = set()
 
-# Decorator attribute names that mark a function as framework-invoked and thus
-# legitimately never imported by name: @app.command(), @app.callback().
+# WHY: typer invokes @app.command() and @app.callback() functions, so they are
+# legitimately never imported by name.
 FRAMEWORK_DECORATORS = {"command", "callback"}
 
-MIN_NAME_LEN = 4  # shorter identifiers have a high false-positive rate
+MIN_NAME_LEN = 4  # WHY: shorter identifiers have a high false-positive rate
 
-# Per-check toggles.
 CHECK_UNUSED_SYMBOLS = True
 CHECK_ORPHANED_MODULES = True
 CHECK_UNREACHABLE = True
@@ -81,7 +69,7 @@ def _iter_py_files(root: Path) -> list[Path]:
 
 
 def _module_name(path: Path) -> str:
-    # Source files live under MODULE_BASE; importer files (e.g. scripts/) may not,
+    # WHY: source files live under MODULE_BASE; importer files (e.g. scripts/) may not,
     # so fall back to a ROOT-relative dotted name. The result is only used as the
     # base for resolving relative imports, which cross-tree importers don't make.
     try:
@@ -96,9 +84,6 @@ def _module_name(path: Path) -> str:
 
 def _source_modules() -> dict[str, Path]:
     return {_module_name(p): p for p in _iter_py_files(SRC_DIR)}
-
-
-# ─── Symbol & reference extraction (AST) ────────────────────────────────────
 
 
 def _is_framework_decorated(node: ast.AST) -> bool:
@@ -142,9 +127,6 @@ def _loaded_names(path: Path) -> set[str]:
         elif isinstance(node, ast.Attribute):
             names.add(node.attr)
     return names
-
-
-# ─── Import resolution (orphaned-module check) ──────────────────────────────
 
 
 def _resolve_import_from(
@@ -197,8 +179,6 @@ def _imported_modules(path: Path, modules: dict[str, Path]) -> set[str]:
     return imported
 
 
-# ─── Unreachable-code detection (AST) ───────────────────────────────────────
-
 _TERMINALS = (ast.Return, ast.Raise, ast.Break, ast.Continue)
 
 
@@ -235,10 +215,9 @@ def test_no_unused_public_symbols() -> None:
                 continue
             if f"{module}::{name}" in SYMBOL_EXCEPTIONS:
                 continue
-            # A symbol is alive if any module loads it — including its own, since
-            # the definition statement itself is not a load. Dead = never read
-            # anywhere. (Conservative: shared names mask deadness but never cause
-            # a live symbol to be flagged.)
+            # WHY: a symbol is alive if any module loads it, including its own, since
+            # the definition statement itself is not a load. Conservative: shared names mask
+            # deadness but never cause a live symbol to be flagged.
             if any(name in names for names in loaded_by_file.values()):
                 continue
             if re.search(rf"\b{re.escape(name)}\b", text_corpus):
@@ -272,7 +251,7 @@ def test_no_orphaned_modules() -> None:
         for module, refs in sorted(incoming.items())
         if refs == 0
         and module not in MODULE_EXCEPTIONS
-        and modules[module].name != "__init__.py"  # packages aggregate, don't originate
+        and modules[module].name != "__init__.py"  # WHY: packages aggregate, don't originate
     ]
 
     if orphaned:

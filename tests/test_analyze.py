@@ -404,7 +404,6 @@ class TestSummarizerCache:
         assert result["summary"] == "fresh summary"
         mock_client.generate.assert_called_once()
 
-        # Verify it was stored
         cached = cache.get("summary", key)
         assert cached is not None
         assert cached["summary"] == "fresh summary"

@@ -20,7 +20,6 @@ class ModelPricing(NamedTuple):
     output_cost_per_mtok: float
 
 
-# model name/alias -> ModelPricing
 _REGISTRY: dict[str, ModelPricing] = {}
 
 

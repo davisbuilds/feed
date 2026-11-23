@@ -65,11 +65,9 @@ def run_ingestion(
     settings = get_settings()
     result = IngestResult()
 
-    # Initialize database if needed
     if db is None:
         db = Database(settings.data_dir / "articles.db")
 
-    # Load feed config if needed
     if feed_config is None:
         feed_config = FeedConfig(settings.config_dir / "feeds.yaml")
 
@@ -81,18 +79,15 @@ def run_ingestion(
     logger.info(f"Starting ingestion for {len(feeds)} feeds")
     result.feeds_checked = len(feeds)
 
-    # Fetch all feeds
     feed_results = fetch_all_feeds(
         feeds_config=feeds,
         lookback_hours=settings.lookback_hours,
         max_articles_per_feed=settings.max_articles_per_feed,
     )
 
-    # Process each feed result
     all_articles: list[Article] = []
 
     for feed_result in feed_results:
-        # Update feed status in database
         db.update_feed_status(
             feed_url=feed_result.feed_url,
             feed_name=feed_result.feed_name,
@@ -110,7 +105,6 @@ def run_ingestion(
     result.articles_found = len(all_articles)
     logger.info(f"Found {result.articles_found} articles from {result.feeds_successful} feeds")
 
-    # Deduplicate against existing articles
     new_articles: list[Article] = []
     for article in all_articles:
         if not db.article_exists(article.id):
@@ -123,14 +117,12 @@ def run_ingestion(
         result.duration_seconds = time.time() - start_time
         return result
 
-    # Fetch and process content
     if fetch_content:
         logger.info("Fetching article content...")
         new_articles = process_articles(new_articles, fetch_content=True)
 
     result.articles_processed = len(new_articles)
 
-    # Store articles
     for article in new_articles:
         db.save_article(article)
 

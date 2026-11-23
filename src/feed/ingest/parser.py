@@ -14,7 +14,6 @@ from feed.models import Article
 
 logger = get_logger("parser")
 
-# Tags to remove entirely (including content)
 REMOVE_TAGS = {
     "script",
     "style",
@@ -33,7 +32,6 @@ REMOVE_TAGS = {
     "audio",
 }
 
-# Minimum word count to consider content valid
 MIN_WORD_COUNT = 50
 
 _UNICODE_WHITESPACE_RE = re.compile(r"[\u00a0\u2000-\u200b\u2028\u2029\u202f\u205f\u3000]")
@@ -85,7 +83,6 @@ def fetch_article_content(article: Article, timeout: int = 30) -> Article:
         content = extract_text_content(html, str(article.url))
         word_count = len(content.split())
 
-        # Update article
         article.content = content
         article.word_count = word_count
 
@@ -114,22 +111,19 @@ def extract_text_content(html: str, base_url: str = "") -> str:
     """
     soup = BeautifulSoup(html, "lxml")
 
-    # Remove unwanted tags
     for tag in soup.find_all(REMOVE_TAGS):
         tag.decompose()
 
-    # Try to find main content container
     content_element = None
 
-    # Try Substack-specific selectors first
     for selector in [
-        "div.body.markup",  # Substack posts
-        "article.post",  # Many blogs
-        "div.post-content",  # Common pattern
-        "article",  # Semantic HTML
-        "main",  # Semantic HTML
-        "div.entry-content",  # WordPress
-        "div.article-content",  # News sites
+        "div.body.markup",
+        "article.post",
+        "div.post-content",
+        "article",
+        "main",
+        "div.entry-content",
+        "div.article-content",
     ]:
         if "." in selector:
             tag, class_name = selector.split(".", 1)
@@ -140,25 +134,21 @@ def extract_text_content(html: str, base_url: str = "") -> str:
         if content_element:
             break
 
-    # Fall back to body
     if not content_element:
         content_element = soup.body or soup
 
-    # Extract text with some structure
     text_parts: list[str] = []
 
     for element in content_element.descendants:
         if element.name in {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote"}:
             text = element.get_text(separator=" ", strip=True)
             if text:
-                # Add heading markers for context
                 if element.name.startswith("h"):
                     text = f"\n## {text}\n"
                 elif element.name == "blockquote":
                     text = f"> {text}"
                 text_parts.append(text)
 
-    # Join and clean
     content = "\n\n".join(text_parts)
     content = clean_text(content)
 
@@ -173,16 +163,12 @@ def clean_text(text: str) -> str:
     - Normalize unicode
     - Remove common artifacts
     """
-    # Normalize unicode whitespace
     text = _UNICODE_WHITESPACE_RE.sub(" ", text)
 
-    # Remove excessive newlines
     text = _EXCESSIVE_NEWLINES_RE.sub("\n\n", text)
 
-    # Remove excessive spaces
     text = _EXCESSIVE_SPACES_RE.sub(" ", text)
 
-    # Remove common newsletter artifacts
     text = _NEWSLETTER_ARTIFACT_RE.sub("", text)
 
     return text.strip()
@@ -210,7 +196,6 @@ def process_articles(
         if fetch_content:
             article = fetch_article_content(article)
 
-        # Skip articles with too little content
         if article.word_count < min_word_count:
             logger.debug(f"Skipping article with {article.word_count} words: {article.title}")
             continue

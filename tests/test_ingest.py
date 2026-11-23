@@ -150,7 +150,6 @@ class TestAtomicSave:
             for f in concurrent.futures.as_completed(futures):
                 results.append(f.result())
 
-        # Exactly one should return True (inserted), rest False (ignored)
         assert results.count(True) == 1
         assert results.count(False) == 3
 
@@ -160,8 +159,6 @@ class TestAtomicSave:
         a2 = self._make_article("id_bbb", "https://example.com/same")
 
         assert db.save_article(a1) is True
-        # Same URL, different ID -- still rejected by url UNIQUE constraint
-        # INSERT OR IGNORE handles this without raising
         assert db.save_article(a2) is False
 
 
@@ -284,5 +281,4 @@ class TestFeedStatusTimestamp:
             ).fetchone()
 
         ts = row[0]
-        # datetime.now(timezone.utc).isoformat() includes +00:00
         assert "+00:00" in ts
