@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=[
-            # WHY: later files win, so a project .env overrides the user config
+            # WHY: Pydantic gives later files priority, letting project .env override user defaults.
             XDG_CONFIG_PATH / "config.env",
             ".env",
         ],

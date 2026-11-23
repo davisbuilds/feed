@@ -129,6 +129,7 @@ def test_matching_real_tag_excludes_released_history_and_new_manifest_falls_back
     assert _unreleased(repo).returncode == 0
     _git(repo, "commit", "--allow-empty", "-m", "fix: valid unreleased change")
     assert _unreleased(repo).returncode == 0
+    # WHY: exercise the gap between the version bump and publishing its tag.
     _release_metadata(repo, bootstrap, "0.4.0")
     result = _unreleased(repo)
     assert result.returncode == 1
