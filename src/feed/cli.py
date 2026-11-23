@@ -26,6 +26,7 @@ import sys
 from datetime import UTC, datetime, timedelta
 from importlib.metadata import version as package_version
 from pathlib import Path
+from typing import Literal
 
 import click
 import typer
@@ -250,7 +251,7 @@ def init(
     provider = typer.prompt(
         "LLM provider",
         default="openai",
-        type=click.Choice(["openai", "gemini", "anthropic"]),
+        type=Literal["openai", "gemini", "anthropic"],
     )
 
     api_key = typer.prompt(
