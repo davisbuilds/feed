@@ -2,10 +2,13 @@
 
 from datetime import UTC, datetime
 from importlib.metadata import version
+from pathlib import Path
+from shlex import quote
 from types import SimpleNamespace
 
 import pytest
 import typer
+from typer.testing import CliRunner
 
 from feed.models import Article, CategoryDigest, DailyDigest
 
@@ -95,6 +98,35 @@ def test_init_defaults_to_openai_and_writes_openai_key(monkeypatch, tmp_path) ->
     assert prompt_calls[0] == ("LLM provider", "openai")
     assert "LLM_PROVIDER=openai" in config_contents
     assert "OPENAI_API_KEY=test-openai-key" in config_contents
+
+
+def test_init_copies_checkout_sample_from_another_directory(monkeypatch, tmp_path) -> None:
+    import feed.cli as cli
+
+    config_dir = tmp_path / "xdg"
+    checkout_sample = Path(__file__).resolve().parents[1] / "config" / "feeds.yaml"
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "XDG_CONFIG_PATH", config_dir)
+
+    result = CliRunner().invoke(cli.app, ["init"], input="\ntest-openai-key\n\n\n")
+
+    assert result.exit_code == 0, result.output
+    assert (config_dir / "feeds.yaml").read_bytes() == checkout_sample.read_bytes()
+
+
+def test_schedule_previews_checkout_root_from_another_directory(monkeypatch, tmp_path) -> None:
+    import feed.cli as cli
+
+    checkout = Path(__file__).resolve().parents[1]
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("COLUMNS", "260")
+
+    result = CliRunner().invoke(cli.app, ["schedule", "--backend", "cron"])
+
+    assert result.exit_code == 0, result.output
+    assert f"cd {quote(str(checkout))} &&" in result.output
+    assert "./feed run --send" in result.output
+    assert quote(str(checkout / "logs" / "scheduler.log")) in result.output
 
 
 def test_copy_digest_to_clipboard_uses_xclip_when_available(monkeypatch) -> None:
