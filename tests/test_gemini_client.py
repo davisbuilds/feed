@@ -60,6 +60,7 @@ def test_gemini_generate_uses_parsed_basemodel(gemini_module):
     client = module.GeminiClient(api_key="k", model="gemini-test")
     result = client.generate(prompt="p", system="s", response_schema=_Schema)
 
+    mock_client_cls.assert_called_once_with(api_key="k", http_options={"api_version": "v1beta"})
     assert result.parsed == {"summary": "hello"}
     assert result.input_tokens == 42
     assert result.output_tokens == 7

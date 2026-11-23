@@ -29,6 +29,7 @@ def main() -> int:
 
     try:
         from google import genai
+        from google.genai import types
     except ImportError as exc:
         print(
             "Gemini model listing requires the gemini dependency. "
@@ -37,10 +38,13 @@ def main() -> int:
         print(f"Import error: {exc}")
         return 1
 
-    client = genai.Client(api_key=settings.provider_api_key)
+    client = genai.Client(
+        api_key=settings.provider_api_key,
+        http_options=types.HttpOptions(api_version="v1beta"),
+    )
     print("Available models:")
     for model in client.models.list():
-        if "generateContent" in model.supported_generation_methods:
+        if "generateContent" in (model.supported_actions or []):
             print(f"- {model.name}")
 
     return 0
