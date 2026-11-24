@@ -65,6 +65,12 @@ JSON output is selected.
 | `config` | `--json` | Show active configuration |
 | `cache` | `--clear` | Cache statistics or clear |
 
+`feed config` reports whether credentials are configured. In JSON output,
+replace reads of `llm_api_key`, `openai_api_key`, and `resend_api_key` with their
+boolean `*_configured` fields. `provider_api_key_configured` reports whether
+the selected LLM provider has a credential. Credential status reflects local
+configuration.
+
 ## Configuration Variables
 
 | Variable | Default | Purpose |
