@@ -1221,26 +1221,19 @@ def status(
         console.print(recent_table)
 
 
-def _redact_key(key: str) -> str:
-    """Show first 10 chars of an API key, redact the rest."""
-    if len(key) <= 10:
-        return "***"
-    return key[:10] + "..."
-
-
 def _config_json() -> None:
-    """Output full configuration as JSON for programmatic consumption."""
+    """Output configuration and credential status as JSON."""
     try:
         settings = get_settings()
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         raise typer.Exit(code=1) from None
 
-    data = settings.model_dump(mode="json")
-
-    for field in ("llm_api_key", "openai_api_key", "resend_api_key"):
-        if data.get(field):
-            data[field] = _redact_key(data[field])
+    credential_fields = ("llm_api_key", "openai_api_key", "resend_api_key")
+    data = settings.model_dump(mode="json", exclude=set(credential_fields))
+    for field in credential_fields:
+        data[f"{field}_configured"] = bool(getattr(settings, field))
+    data["provider_api_key_configured"] = bool(settings.provider_api_key)
 
     data["config_dir"] = str(settings.config_dir.resolve())
     data["data_dir"] = str(settings.data_dir.resolve())
@@ -1293,17 +1286,8 @@ def config(
         settings = get_settings()
         console.print("[green]✓[/green] Settings loaded")
 
-        if settings.provider_api_key:
-            key_preview = settings.provider_api_key[:10] + "..."
-            console.print(f"  LLM API key: {key_preview}")
-        else:
-            errors.append("Missing LLM_API_KEY")
-
-        if settings.resend_api_key:
-            key_preview = settings.resend_api_key[:10] + "..."
-            console.print(f"  Resend API key: {key_preview}")
-        else:
-            errors.append("Missing RESEND_API_KEY")
+        console.print("  LLM API key: configured")
+        console.print("  Resend API key: configured")
 
         console.print(f"  Email from: {settings.email_from}")
         console.print(f"  Email to: {settings.email_to}")
