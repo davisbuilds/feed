@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/davisbuilds/feed/compare/v0.3.3...v0.4.0) (2026-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** report credential presence without key prefixes ([#102](https://github.com/davisbuilds/feed/issues/102))
+* **cli:** feed config --json replaces llm_api_key, openai_api_key, and resend_api_key with boolean fields suffixed _configured. Use provider_api_key_configured for the selected LLM provider.
+
+### Bug Fixes
+
+* **cli:** report credential presence without key prefixes ([6bbf873](https://github.com/davisbuilds/feed/commit/6bbf87391764424e24b50ca4986629379faef0b4))
+* **cli:** report credential presence without key prefixes ([#102](https://github.com/davisbuilds/feed/issues/102)) ([ff66031](https://github.com/davisbuilds/feed/commit/ff66031844ca0778bed28fc3ee1222df04cb4411))
+
 ## [0.3.3](https://github.com/davisbuilds/feed/compare/v0.3.2...v0.3.3) (2026-11-23)
 
 
